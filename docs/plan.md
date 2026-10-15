@@ -73,14 +73,14 @@ fase berikutnya. Fokusnya MVP yang jalan, terdokumentasi, dan bisa didemokan.
 
 ## Fase 6 — Testing & QA
 
-- [ ] Unit test service Go
-- [ ] Integration test antar service
-- [ ] API test (Bruno/Postman collection di repo)
-- [ ] Frontend test (Jest + React Testing Library)
-- [ ] E2E test (Playwright)
-- [ ] Load test (k6)
-- [ ] Security test (JWT expiry, RBAC bypass, input validation, rate limit)
-- [ ] Bug fix & refactor
+- [x] Unit test service Go (`go test ./...`: vendor, bid, po, approval, pkg/auth + aturan status tender)
+- [x] Integration test antar service — `scripts/e2e.sh`, 35 asersi lewat gateway (dijalankan terhadap stack container: 35 PASS / 0 FAIL)
+- [ ] API test dengan Bruno/Postman — digantikan skrip e2e yang bisa dijalankan ulang dan exit non-zero saat gagal
+- [ ] Frontend test (Jest + React Testing Library) — belum; UI diuji lewat Playwright
+- [x] E2E test (Playwright) — 7 tes di browser sungguhan, dijalankan terhadap stack container: 7 PASS. Tes ini menemukan dua celah nyata: modal belum punya `role="dialog"` (sehingga pencarian label ambigu karena Next menyimpan segmen rute yang sudah dikunjungi di DOM) dan `getByText("pending")` cocok dengan `<option>` tersembunyi alih-alih badge status — keduanya diperbaiki di komponen/spec, bukan dengan melonggarkan asersi
+- [x] Load test — `scripts/loadtest` (persentil latensi, throughput, sebaran status; terukur ~780 req/s p50 3,9 ms di gateway)
+- [x] Security test dasar — `scripts/security-check.sh`, 16 asersi: token kedaluwarsa/diubah/ngawur, RBAC tidak bisa dilewati, validasi input, isolasi tenant, rate limit
+- [x] Bug fix & refactor — bug yang ketemu lewat pengujian: rate limiter sliding-window (lockout tanpa batas), reminder approval tidak pernah terkirim (filter tenant kosong), event `po.issued`/`approval.decided` tidak diterbitkan, `budget` tidak ikut di `tender.published`, healthcheck kena rate limit
 
 ## Fase 7 — CI/CD & deployment ⏳
 

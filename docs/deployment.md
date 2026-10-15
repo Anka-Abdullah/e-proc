@@ -53,6 +53,32 @@ daftar yang harus diisi. Poin pentingnya:
 - Probe memakai `/healthz` (liveness) dan `/readyz` (readiness) yang sama dengan
   compose, termasuk `/readyz` gateway yang melaporkan status tiap upstream.
 
+## Ukuran image
+
+Service Go dibangun sebagai binary statis di atas base `scratch` — tanpa shell,
+tanpa package manager, berjalan sebagai uid 10001.
+
+| Service | Ukuran |
+| --- | --- |
+| api-gateway | 30,7 MB |
+| auth-service | 33,1 MB |
+| audit-service | 33,0 MB |
+| reporting-service | 33,1 MB |
+| vendor, tender, po, approval, bid | 34,0–34,2 MB |
+
+Isinya hanya tiga hal: binary (24 MB — sisa terbesar, konsekuensi dari gRPC +
+driver MongoDB yang di-link statis), database zona waktu (1,5 MB), dan berkas
+sertifikat TLS (184 kB).
+
+Karena tidak ada `wget`/`curl` di dalam image, healthcheck container dijalankan
+oleh binary-nya sendiri: `["CMD", "/service", "-healthcheck"]`. Mode itu
+memeriksa `/healthz` milik service dan keluar 0/1 — lihat `pkg/app/healthcheck.go`.
+
+Catatan kalau ukuran jadi masalah: 24 MB itu memang binary-nya. Menekannya lebih
+jauh berarti memakai UPX (kompresi, menambah waktu start dan sering ditandai
+pemindai keamanan) atau melepas dependensi — keduanya keputusan sadar, bukan
+sesuatu yang pantas dilakukan diam-diam.
+
 ## Pemecahan masalah
 
 ### Build berhenti dengan `rpc error: ... EOF`, `database not open`, atau container tiba-tiba `Up N seconds`

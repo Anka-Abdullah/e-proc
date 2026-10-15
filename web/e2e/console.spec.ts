@@ -53,10 +53,11 @@ test.describe("konsol e-procurement", () => {
 
     const code = `UI-${Date.now().toString().slice(-6)}`;
     await page.getByRole("button", { name: "Tambah vendor" }).click();
-    await page.getByLabel("Kode vendor").fill(code);
-    await page.getByLabel("Nama").fill("PT Dari UI");
-    await page.getByLabel("Email").fill(`ui${Date.now()}@contoh.co.id`);
-    await page.getByRole("button", { name: "Simpan" }).click();
+    const dialog = page.getByRole("dialog", { name: "Tambah vendor" });
+    await dialog.getByLabel("Kode vendor").fill(code);
+    await dialog.getByLabel("Nama").fill("PT Dari UI");
+    await dialog.getByLabel("Email").fill(`ui${Date.now()}@contoh.co.id`);
+    await dialog.getByRole("button", { name: "Simpan" }).click();
 
     await expect(page.getByText(new RegExp(`Vendor ${code} dibuat`))).toBeVisible();
     await expect(page.getByRole("cell", { name: code })).toBeVisible();
@@ -68,12 +69,13 @@ test.describe("konsol e-procurement", () => {
 
     await page.goto("/vendors");
     await page.getByRole("button", { name: "Tambah vendor" }).click();
-    await page.getByLabel("Email").fill("bukan-email");
-    await page.getByRole("button", { name: "Simpan" }).click();
+    const dialog = page.getByRole("dialog", { name: "Tambah vendor" });
+    await dialog.getByLabel("Email").fill("bukan-email");
+    await dialog.getByRole("button", { name: "Simpan" }).click();
 
     // Client-side validation fires before any request is sent.
-    await expect(page.getByText("Kode wajib diisi")).toBeVisible();
-    await expect(page.getByText("Format email tidak valid")).toBeVisible();
+    await expect(dialog.getByText("Kode wajib diisi")).toBeVisible();
+    await expect(dialog.getByText("Format email tidak valid")).toBeVisible();
   });
 
   test("po di atas threshold masuk approval dan statusnya berubah otomatis", async ({ page }) => {
@@ -137,13 +139,15 @@ test.describe("konsol e-procurement", () => {
 
     // The UI must show the PO as pending approval without anyone patching it.
     await page.goto("/purchase-orders");
-    await expect(page.getByRole("cell", { name: poNumber! })).toBeVisible();
-    await expect(page.getByText("pending approval").first()).toBeVisible();
+    const poRow = page.getByRole("row", { name: new RegExp(poNumber!) });
+    await expect(poRow).toBeVisible();
+    await expect(poRow.getByText("pending approval")).toBeVisible();
 
     // And the approval queue must contain the request the consumer created.
     await page.getByRole("link", { name: "Approval" }).first().click();
     await page.waitForURL("**/approvals");
-    await expect(page.getByText("pending").first()).toBeVisible();
+    const approvalsTable = page.getByRole("table");
+    await expect(approvalsTable.getByText("pending").first()).toBeVisible();
   });
 
   test("logout mengembalikan ke halaman login", async ({ page }) => {

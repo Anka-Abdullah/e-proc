@@ -274,7 +274,16 @@ export function Modal({
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/40 p-4 pt-16">
-      <div className="w-full max-w-lg rounded-lg bg-white shadow-xl">
+      {/* role/aria-modal are not decoration: they let assistive technology — and
+          tests — address the dialog as one region, instead of matching fields
+          that exist elsewhere in the document (Next keeps visited route segments
+          in the DOM, so an unscoped label lookup is ambiguous). */}
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        className="w-full max-w-lg rounded-lg bg-white shadow-xl"
+      >
         <header className="flex items-center justify-between border-b border-slate-100 px-5 py-3">
           <h2 className="text-sm font-semibold text-slate-900">{title}</h2>
           <Button variant="ghost" size="sm" onClick={onClose} aria-label="Tutup">

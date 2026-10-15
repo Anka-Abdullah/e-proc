@@ -9,7 +9,11 @@ ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
 RUN corepack enable
 
-COPY web/package.json web/pnpm-lock.yaml* ./
+# The lockfile alone is not enough: pnpm-workspace.yaml carries the allowBuilds
+# policy (which dependency build scripts are permitted). Without it pnpm v11
+# treats an unapproved build script as an error inside the image, while the same
+# install succeeds on the host that has the file.
+COPY web/package.json web/pnpm-lock.yaml* web/pnpm-workspace.yaml* ./
 RUN --mount=type=cache,target=/pnpm/store \
     pnpm config set store-dir /pnpm/store && \
     pnpm config set fetch-retries 6 && \
