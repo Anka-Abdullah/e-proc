@@ -51,14 +51,18 @@ message RequestApprovalRequest {
 message RequestApprovalResponse { Approval approval = 1; }
 
 message DecideApprovalRequest {
-  string id = 1;
-  bool approve = 2;
-  string comment = 3;
-  string actor_id = 4;
+  string tenant_id = 1;
+  string id = 2;
+  bool approve = 3;
+  string comment = 4;
+  string actor_id = 5;
 }
 message DecideApprovalResponse { Approval approval = 1; }
 
-message GetApprovalRequest { string id = 1; }
+message GetApprovalRequest {
+  string tenant_id = 1;
+  string id = 2;
+}
 message GetApprovalResponse { Approval approval = 1; }
 
 message ListApprovalsRequest {

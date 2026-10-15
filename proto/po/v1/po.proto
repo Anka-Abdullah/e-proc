@@ -58,13 +58,18 @@ message CreatePurchaseOrderResponse {
   bool requires_approval = 2;
 }
 
-message GetPurchaseOrderRequest { string id = 1; }
+message GetPurchaseOrderRequest {
+  string tenant_id = 1;
+  string id = 2;
+}
 message GetPurchaseOrderResponse { PurchaseOrder purchase_order = 1; }
 
 message UpdatePurchaseOrderStatusRequest {
-  string id = 1;
-  PurchaseOrderStatus status = 2;
-  string actor_id = 3;
+  string tenant_id = 1;
+  string id = 2;
+  PurchaseOrderStatus status = 3;
+  string actor_id = 4;
+  string approval_id = 5;
 }
 message UpdatePurchaseOrderStatusResponse { PurchaseOrder purchase_order = 1; }
 
@@ -79,7 +84,11 @@ message ListPurchaseOrdersResponse {
   eproc.common.v1.PageResponse page = 2;
 }
 
-message ClosePurchaseOrderRequest { string id = 1; string actor_id = 2; }
+message ClosePurchaseOrderRequest {
+  string tenant_id = 1;
+  string id = 2;
+  string actor_id = 3;
+}
 message ClosePurchaseOrderResponse { PurchaseOrder purchase_order = 1; }
 
 // PurchaseOrderService owns the PO aggregate and its status machine.

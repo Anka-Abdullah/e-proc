@@ -51,12 +51,16 @@ message SubmitBidRequest {
 }
 message SubmitBidResponse { Bid bid = 1; }
 
-message GetBidRequest { string id = 1; }
+message GetBidRequest {
+  string tenant_id = 1;
+  string id = 2;
+}
 message GetBidResponse { Bid bid = 1; }
 
 message ListBidsByTenderRequest {
-  string tender_id = 1;
-  eproc.common.v1.PageRequest page = 2;
+  string tenant_id = 1;
+  string tender_id = 2;
+  eproc.common.v1.PageRequest page = 3;
 }
 message ListBidsByTenderResponse {
   repeated Bid bids = 1;
@@ -74,13 +78,20 @@ message BidComparison {
   bool fastest_delivery = 7;
 }
 
-message CompareBidsRequest { string tender_id = 1; }
+message CompareBidsRequest {
+  string tenant_id = 1;
+  string tender_id = 2;
+}
 message CompareBidsResponse {
   repeated BidComparison comparisons = 1;
   eproc.common.v1.Money lowest_total = 2;
 }
 
-message SelectBidRequest { string bid_id = 1; string actor_id = 2; }
+message SelectBidRequest {
+  string tenant_id = 1;
+  string bid_id = 2;
+  string actor_id = 3;
+}
 message SelectBidResponse { Bid bid = 1; }
 
 // BidService stores quotations and produces the price comparison report.

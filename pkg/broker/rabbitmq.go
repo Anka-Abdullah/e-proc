@@ -18,16 +18,18 @@ const ExchangeName = "eproc.events"
 
 // Routing keys / event names from the domain event catalogue (see docs/events.md).
 const (
-	EventVendorCreated   = "vendor.created"
-	EventVendorUpdated   = "vendor.updated"
-	EventTenderPublished = "tender.published"
-	EventTenderClosed    = "tender.closed"
-	EventBidSubmitted    = "bid.submitted"
-	EventPOCreated       = "po.created"
-	EventPOApproved      = "po.approved"
-	EventPORejected      = "po.rejected"
-	EventPOClosed        = "po.closed"
-	EventAuditRecorded   = "audit.recorded"
+	EventVendorCreated     = "vendor.created"
+	EventVendorUpdated     = "vendor.updated"
+	EventTenderPublished   = "tender.published"
+	EventTenderClosed      = "tender.closed"
+	EventBidSubmitted      = "bid.submitted"
+	EventBidSelected       = "bid.selected"
+	EventPOCreated         = "po.created"
+	EventApprovalRequested = "approval.requested"
+	EventPOApproved        = "po.approved"
+	EventPORejected        = "po.rejected"
+	EventPOClosed          = "po.closed"
+	EventAuditRecorded     = "audit.recorded"
 )
 
 // Event is the envelope published for every domain event. Payload stays opaque

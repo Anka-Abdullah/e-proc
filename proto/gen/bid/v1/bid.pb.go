@@ -419,7 +419,8 @@ func (x *SubmitBidResponse) GetBid() *Bid {
 
 type GetBidRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	TenantId      string                 `protobuf:"bytes,1,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
+	Id            string                 `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -452,6 +453,13 @@ func (x *GetBidRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use GetBidRequest.ProtoReflect.Descriptor instead.
 func (*GetBidRequest) Descriptor() ([]byte, []int) {
 	return file_bid_v1_bid_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *GetBidRequest) GetTenantId() string {
+	if x != nil {
+		return x.TenantId
+	}
+	return ""
 }
 
 func (x *GetBidRequest) GetId() string {
@@ -507,8 +515,9 @@ func (x *GetBidResponse) GetBid() *Bid {
 
 type ListBidsByTenderRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	TenderId      string                 `protobuf:"bytes,1,opt,name=tender_id,json=tenderId,proto3" json:"tender_id,omitempty"`
-	Page          *v1.PageRequest        `protobuf:"bytes,2,opt,name=page,proto3" json:"page,omitempty"`
+	TenantId      string                 `protobuf:"bytes,1,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
+	TenderId      string                 `protobuf:"bytes,2,opt,name=tender_id,json=tenderId,proto3" json:"tender_id,omitempty"`
+	Page          *v1.PageRequest        `protobuf:"bytes,3,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -541,6 +550,13 @@ func (x *ListBidsByTenderRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use ListBidsByTenderRequest.ProtoReflect.Descriptor instead.
 func (*ListBidsByTenderRequest) Descriptor() ([]byte, []int) {
 	return file_bid_v1_bid_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *ListBidsByTenderRequest) GetTenantId() string {
+	if x != nil {
+		return x.TenantId
+	}
+	return ""
 }
 
 func (x *ListBidsByTenderRequest) GetTenderId() string {
@@ -704,7 +720,8 @@ func (x *BidComparison) GetFastestDelivery() bool {
 
 type CompareBidsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	TenderId      string                 `protobuf:"bytes,1,opt,name=tender_id,json=tenderId,proto3" json:"tender_id,omitempty"`
+	TenantId      string                 `protobuf:"bytes,1,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
+	TenderId      string                 `protobuf:"bytes,2,opt,name=tender_id,json=tenderId,proto3" json:"tender_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -737,6 +754,13 @@ func (x *CompareBidsRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use CompareBidsRequest.ProtoReflect.Descriptor instead.
 func (*CompareBidsRequest) Descriptor() ([]byte, []int) {
 	return file_bid_v1_bid_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *CompareBidsRequest) GetTenantId() string {
+	if x != nil {
+		return x.TenantId
+	}
+	return ""
 }
 
 func (x *CompareBidsRequest) GetTenderId() string {
@@ -800,8 +824,9 @@ func (x *CompareBidsResponse) GetLowestTotal() *v1.Money {
 
 type SelectBidRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	BidId         string                 `protobuf:"bytes,1,opt,name=bid_id,json=bidId,proto3" json:"bid_id,omitempty"`
-	ActorId       string                 `protobuf:"bytes,2,opt,name=actor_id,json=actorId,proto3" json:"actor_id,omitempty"`
+	TenantId      string                 `protobuf:"bytes,1,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
+	BidId         string                 `protobuf:"bytes,2,opt,name=bid_id,json=bidId,proto3" json:"bid_id,omitempty"`
+	ActorId       string                 `protobuf:"bytes,3,opt,name=actor_id,json=actorId,proto3" json:"actor_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -834,6 +859,13 @@ func (x *SelectBidRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use SelectBidRequest.ProtoReflect.Descriptor instead.
 func (*SelectBidRequest) Descriptor() ([]byte, []int) {
 	return file_bid_v1_bid_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *SelectBidRequest) GetTenantId() string {
+	if x != nil {
+		return x.TenantId
+	}
+	return ""
 }
 
 func (x *SelectBidRequest) GetBidId() string {
@@ -930,14 +962,16 @@ const file_bid_v1_bid_proto_rawDesc = "" +
 	"\x05notes\x18\x06 \x01(\tR\x05notes\x12\x19\n" +
 	"\bactor_id\x18\a \x01(\tR\aactorId\"8\n" +
 	"\x11SubmitBidResponse\x12#\n" +
-	"\x03bid\x18\x01 \x01(\v2\x11.eproc.bid.v1.BidR\x03bid\"\x1f\n" +
-	"\rGetBidRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"5\n" +
+	"\x03bid\x18\x01 \x01(\v2\x11.eproc.bid.v1.BidR\x03bid\"<\n" +
+	"\rGetBidRequest\x12\x1b\n" +
+	"\ttenant_id\x18\x01 \x01(\tR\btenantId\x12\x0e\n" +
+	"\x02id\x18\x02 \x01(\tR\x02id\"5\n" +
 	"\x0eGetBidResponse\x12#\n" +
-	"\x03bid\x18\x01 \x01(\v2\x11.eproc.bid.v1.BidR\x03bid\"h\n" +
+	"\x03bid\x18\x01 \x01(\v2\x11.eproc.bid.v1.BidR\x03bid\"\x85\x01\n" +
 	"\x17ListBidsByTenderRequest\x12\x1b\n" +
-	"\ttender_id\x18\x01 \x01(\tR\btenderId\x120\n" +
-	"\x04page\x18\x02 \x01(\v2\x1c.eproc.common.v1.PageRequestR\x04page\"t\n" +
+	"\ttenant_id\x18\x01 \x01(\tR\btenantId\x12\x1b\n" +
+	"\ttender_id\x18\x02 \x01(\tR\btenderId\x120\n" +
+	"\x04page\x18\x03 \x01(\v2\x1c.eproc.common.v1.PageRequestR\x04page\"t\n" +
 	"\x18ListBidsByTenderResponse\x12%\n" +
 	"\x04bids\x18\x01 \x03(\v2\x11.eproc.bid.v1.BidR\x04bids\x121\n" +
 	"\x04page\x18\x02 \x01(\v2\x1d.eproc.common.v1.PageResponseR\x04page\"\x85\x02\n" +
@@ -949,15 +983,17 @@ const file_bid_v1_bid_proto_rawDesc = "" +
 	"\x05total\x18\x04 \x01(\v2\x16.eproc.common.v1.MoneyR\x05total\x12#\n" +
 	"\rdelivery_days\x18\x05 \x01(\x05R\fdeliveryDays\x12!\n" +
 	"\flowest_price\x18\x06 \x01(\bR\vlowestPrice\x12)\n" +
-	"\x10fastest_delivery\x18\a \x01(\bR\x0ffastestDelivery\"1\n" +
+	"\x10fastest_delivery\x18\a \x01(\bR\x0ffastestDelivery\"N\n" +
 	"\x12CompareBidsRequest\x12\x1b\n" +
-	"\ttender_id\x18\x01 \x01(\tR\btenderId\"\x8f\x01\n" +
+	"\ttenant_id\x18\x01 \x01(\tR\btenantId\x12\x1b\n" +
+	"\ttender_id\x18\x02 \x01(\tR\btenderId\"\x8f\x01\n" +
 	"\x13CompareBidsResponse\x12=\n" +
 	"\vcomparisons\x18\x01 \x03(\v2\x1b.eproc.bid.v1.BidComparisonR\vcomparisons\x129\n" +
-	"\flowest_total\x18\x02 \x01(\v2\x16.eproc.common.v1.MoneyR\vlowestTotal\"D\n" +
-	"\x10SelectBidRequest\x12\x15\n" +
-	"\x06bid_id\x18\x01 \x01(\tR\x05bidId\x12\x19\n" +
-	"\bactor_id\x18\x02 \x01(\tR\aactorId\"8\n" +
+	"\flowest_total\x18\x02 \x01(\v2\x16.eproc.common.v1.MoneyR\vlowestTotal\"a\n" +
+	"\x10SelectBidRequest\x12\x1b\n" +
+	"\ttenant_id\x18\x01 \x01(\tR\btenantId\x12\x15\n" +
+	"\x06bid_id\x18\x02 \x01(\tR\x05bidId\x12\x19\n" +
+	"\bactor_id\x18\x03 \x01(\tR\aactorId\"8\n" +
 	"\x11SelectBidResponse\x12#\n" +
 	"\x03bid\x18\x01 \x01(\v2\x11.eproc.bid.v1.BidR\x03bid*\x8f\x01\n" +
 	"\tBidStatus\x12\x1a\n" +

@@ -449,7 +449,8 @@ func (x *CreatePurchaseOrderResponse) GetRequiresApproval() bool {
 
 type GetPurchaseOrderRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	TenantId      string                 `protobuf:"bytes,1,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
+	Id            string                 `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -482,6 +483,13 @@ func (x *GetPurchaseOrderRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use GetPurchaseOrderRequest.ProtoReflect.Descriptor instead.
 func (*GetPurchaseOrderRequest) Descriptor() ([]byte, []int) {
 	return file_po_v1_po_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *GetPurchaseOrderRequest) GetTenantId() string {
+	if x != nil {
+		return x.TenantId
+	}
+	return ""
 }
 
 func (x *GetPurchaseOrderRequest) GetId() string {
@@ -537,9 +545,11 @@ func (x *GetPurchaseOrderResponse) GetPurchaseOrder() *PurchaseOrder {
 
 type UpdatePurchaseOrderStatusRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Status        PurchaseOrderStatus    `protobuf:"varint,2,opt,name=status,proto3,enum=eproc.po.v1.PurchaseOrderStatus" json:"status,omitempty"`
-	ActorId       string                 `protobuf:"bytes,3,opt,name=actor_id,json=actorId,proto3" json:"actor_id,omitempty"`
+	TenantId      string                 `protobuf:"bytes,1,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
+	Id            string                 `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
+	Status        PurchaseOrderStatus    `protobuf:"varint,3,opt,name=status,proto3,enum=eproc.po.v1.PurchaseOrderStatus" json:"status,omitempty"`
+	ActorId       string                 `protobuf:"bytes,4,opt,name=actor_id,json=actorId,proto3" json:"actor_id,omitempty"`
+	ApprovalId    string                 `protobuf:"bytes,5,opt,name=approval_id,json=approvalId,proto3" json:"approval_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -574,6 +584,13 @@ func (*UpdatePurchaseOrderStatusRequest) Descriptor() ([]byte, []int) {
 	return file_po_v1_po_proto_rawDescGZIP(), []int{6}
 }
 
+func (x *UpdatePurchaseOrderStatusRequest) GetTenantId() string {
+	if x != nil {
+		return x.TenantId
+	}
+	return ""
+}
+
 func (x *UpdatePurchaseOrderStatusRequest) GetId() string {
 	if x != nil {
 		return x.Id
@@ -591,6 +608,13 @@ func (x *UpdatePurchaseOrderStatusRequest) GetStatus() PurchaseOrderStatus {
 func (x *UpdatePurchaseOrderStatusRequest) GetActorId() string {
 	if x != nil {
 		return x.ActorId
+	}
+	return ""
+}
+
+func (x *UpdatePurchaseOrderStatusRequest) GetApprovalId() string {
+	if x != nil {
+		return x.ApprovalId
 	}
 	return ""
 }
@@ -761,8 +785,9 @@ func (x *ListPurchaseOrdersResponse) GetPage() *v1.PageResponse {
 
 type ClosePurchaseOrderRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	ActorId       string                 `protobuf:"bytes,2,opt,name=actor_id,json=actorId,proto3" json:"actor_id,omitempty"`
+	TenantId      string                 `protobuf:"bytes,1,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
+	Id            string                 `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
+	ActorId       string                 `protobuf:"bytes,3,opt,name=actor_id,json=actorId,proto3" json:"actor_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -795,6 +820,13 @@ func (x *ClosePurchaseOrderRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use ClosePurchaseOrderRequest.ProtoReflect.Descriptor instead.
 func (*ClosePurchaseOrderRequest) Descriptor() ([]byte, []int) {
 	return file_po_v1_po_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *ClosePurchaseOrderRequest) GetTenantId() string {
+	if x != nil {
+		return x.TenantId
+	}
+	return ""
 }
 
 func (x *ClosePurchaseOrderRequest) GetId() string {
@@ -897,15 +929,19 @@ const file_po_v1_po_proto_rawDesc = "" +
 	"\bactor_id\x18\a \x01(\tR\aactorId\"\x8d\x01\n" +
 	"\x1bCreatePurchaseOrderResponse\x12A\n" +
 	"\x0epurchase_order\x18\x01 \x01(\v2\x1a.eproc.po.v1.PurchaseOrderR\rpurchaseOrder\x12+\n" +
-	"\x11requires_approval\x18\x02 \x01(\bR\x10requiresApproval\")\n" +
-	"\x17GetPurchaseOrderRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"]\n" +
+	"\x11requires_approval\x18\x02 \x01(\bR\x10requiresApproval\"F\n" +
+	"\x17GetPurchaseOrderRequest\x12\x1b\n" +
+	"\ttenant_id\x18\x01 \x01(\tR\btenantId\x12\x0e\n" +
+	"\x02id\x18\x02 \x01(\tR\x02id\"]\n" +
 	"\x18GetPurchaseOrderResponse\x12A\n" +
-	"\x0epurchase_order\x18\x01 \x01(\v2\x1a.eproc.po.v1.PurchaseOrderR\rpurchaseOrder\"\x87\x01\n" +
-	" UpdatePurchaseOrderStatusRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x128\n" +
-	"\x06status\x18\x02 \x01(\x0e2 .eproc.po.v1.PurchaseOrderStatusR\x06status\x12\x19\n" +
-	"\bactor_id\x18\x03 \x01(\tR\aactorId\"f\n" +
+	"\x0epurchase_order\x18\x01 \x01(\v2\x1a.eproc.po.v1.PurchaseOrderR\rpurchaseOrder\"\xc5\x01\n" +
+	" UpdatePurchaseOrderStatusRequest\x12\x1b\n" +
+	"\ttenant_id\x18\x01 \x01(\tR\btenantId\x12\x0e\n" +
+	"\x02id\x18\x02 \x01(\tR\x02id\x128\n" +
+	"\x06status\x18\x03 \x01(\x0e2 .eproc.po.v1.PurchaseOrderStatusR\x06status\x12\x19\n" +
+	"\bactor_id\x18\x04 \x01(\tR\aactorId\x12\x1f\n" +
+	"\vapproval_id\x18\x05 \x01(\tR\n" +
+	"approvalId\"f\n" +
 	"!UpdatePurchaseOrderStatusResponse\x12A\n" +
 	"\x0epurchase_order\x18\x01 \x01(\v2\x1a.eproc.po.v1.PurchaseOrderR\rpurchaseOrder\"\xc1\x01\n" +
 	"\x19ListPurchaseOrdersRequest\x12\x1b\n" +
@@ -915,10 +951,11 @@ const file_po_v1_po_proto_rawDesc = "" +
 	"\x04page\x18\x04 \x01(\v2\x1c.eproc.common.v1.PageRequestR\x04page\"\x94\x01\n" +
 	"\x1aListPurchaseOrdersResponse\x12C\n" +
 	"\x0fpurchase_orders\x18\x01 \x03(\v2\x1a.eproc.po.v1.PurchaseOrderR\x0epurchaseOrders\x121\n" +
-	"\x04page\x18\x02 \x01(\v2\x1d.eproc.common.v1.PageResponseR\x04page\"F\n" +
-	"\x19ClosePurchaseOrderRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
-	"\bactor_id\x18\x02 \x01(\tR\aactorId\"_\n" +
+	"\x04page\x18\x02 \x01(\v2\x1d.eproc.common.v1.PageResponseR\x04page\"c\n" +
+	"\x19ClosePurchaseOrderRequest\x12\x1b\n" +
+	"\ttenant_id\x18\x01 \x01(\tR\btenantId\x12\x0e\n" +
+	"\x02id\x18\x02 \x01(\tR\x02id\x12\x19\n" +
+	"\bactor_id\x18\x03 \x01(\tR\aactorId\"_\n" +
 	"\x1aClosePurchaseOrderResponse\x12A\n" +
 	"\x0epurchase_order\x18\x01 \x01(\v2\x1a.eproc.po.v1.PurchaseOrderR\rpurchaseOrder*\x95\x02\n" +
 	"\x13PurchaseOrderStatus\x12%\n" +

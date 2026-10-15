@@ -411,10 +411,11 @@ func (x *RequestApprovalResponse) GetApproval() *Approval {
 
 type DecideApprovalRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Approve       bool                   `protobuf:"varint,2,opt,name=approve,proto3" json:"approve,omitempty"`
-	Comment       string                 `protobuf:"bytes,3,opt,name=comment,proto3" json:"comment,omitempty"`
-	ActorId       string                 `protobuf:"bytes,4,opt,name=actor_id,json=actorId,proto3" json:"actor_id,omitempty"`
+	TenantId      string                 `protobuf:"bytes,1,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
+	Id            string                 `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
+	Approve       bool                   `protobuf:"varint,3,opt,name=approve,proto3" json:"approve,omitempty"`
+	Comment       string                 `protobuf:"bytes,4,opt,name=comment,proto3" json:"comment,omitempty"`
+	ActorId       string                 `protobuf:"bytes,5,opt,name=actor_id,json=actorId,proto3" json:"actor_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -447,6 +448,13 @@ func (x *DecideApprovalRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use DecideApprovalRequest.ProtoReflect.Descriptor instead.
 func (*DecideApprovalRequest) Descriptor() ([]byte, []int) {
 	return file_approval_v1_approval_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *DecideApprovalRequest) GetTenantId() string {
+	if x != nil {
+		return x.TenantId
+	}
+	return ""
 }
 
 func (x *DecideApprovalRequest) GetId() string {
@@ -523,7 +531,8 @@ func (x *DecideApprovalResponse) GetApproval() *Approval {
 
 type GetApprovalRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	TenantId      string                 `protobuf:"bytes,1,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
+	Id            string                 `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -556,6 +565,13 @@ func (x *GetApprovalRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use GetApprovalRequest.ProtoReflect.Descriptor instead.
 func (*GetApprovalRequest) Descriptor() ([]byte, []int) {
 	return file_approval_v1_approval_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *GetApprovalRequest) GetTenantId() string {
+	if x != nil {
+		return x.TenantId
+	}
+	return ""
 }
 
 func (x *GetApprovalRequest) GetId() string {
@@ -768,16 +784,18 @@ const file_approval_v1_approval_proto_rawDesc = "" +
 	"\vassigned_to\x18\x06 \x01(\tR\n" +
 	"assignedTo\"R\n" +
 	"\x17RequestApprovalResponse\x127\n" +
-	"\bapproval\x18\x01 \x01(\v2\x1b.eproc.approval.v1.ApprovalR\bapproval\"v\n" +
-	"\x15DecideApprovalRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
-	"\aapprove\x18\x02 \x01(\bR\aapprove\x12\x18\n" +
-	"\acomment\x18\x03 \x01(\tR\acomment\x12\x19\n" +
-	"\bactor_id\x18\x04 \x01(\tR\aactorId\"Q\n" +
+	"\bapproval\x18\x01 \x01(\v2\x1b.eproc.approval.v1.ApprovalR\bapproval\"\x93\x01\n" +
+	"\x15DecideApprovalRequest\x12\x1b\n" +
+	"\ttenant_id\x18\x01 \x01(\tR\btenantId\x12\x0e\n" +
+	"\x02id\x18\x02 \x01(\tR\x02id\x12\x18\n" +
+	"\aapprove\x18\x03 \x01(\bR\aapprove\x12\x18\n" +
+	"\acomment\x18\x04 \x01(\tR\acomment\x12\x19\n" +
+	"\bactor_id\x18\x05 \x01(\tR\aactorId\"Q\n" +
 	"\x16DecideApprovalResponse\x127\n" +
-	"\bapproval\x18\x01 \x01(\v2\x1b.eproc.approval.v1.ApprovalR\bapproval\"$\n" +
-	"\x12GetApprovalRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"N\n" +
+	"\bapproval\x18\x01 \x01(\v2\x1b.eproc.approval.v1.ApprovalR\bapproval\"A\n" +
+	"\x12GetApprovalRequest\x12\x1b\n" +
+	"\ttenant_id\x18\x01 \x01(\tR\btenantId\x12\x0e\n" +
+	"\x02id\x18\x02 \x01(\tR\x02id\"N\n" +
 	"\x13GetApprovalResponse\x127\n" +
 	"\bapproval\x18\x01 \x01(\v2\x1b.eproc.approval.v1.ApprovalR\bapproval\"\xc1\x01\n" +
 	"\x14ListApprovalsRequest\x12\x1b\n" +

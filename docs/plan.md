@@ -39,9 +39,9 @@ fase berikutnya. Fokusnya MVP yang jalan, terdokumentasi, dan bisa didemokan.
 - [x] Vendor service (CRUD, validasi, status) — terverifikasi end-to-end
 - [x] Tender service (CRUD, publish, close, auto-close scheduler) — terverifikasi end-to-end
 - [x] Auth service (login, logout dengan pencabutan token, register, me) — terverifikasi end-to-end
-- [ ] Bid service (submit, list per tender, perbandingan harga)
-- [ ] Purchase Order service (buat dari bid, status machine)
-- [ ] Approval service (workflow, approve/reject, history)
+- [x] Bid service (submit, list per tender, perbandingan harga) — terverifikasi end-to-end
+- [x] Purchase Order service (buat dari bid, status machine) — terverifikasi end-to-end
+- [x] Approval service (workflow, approve/reject, history) — terverifikasi end-to-end
 - [ ] Audit service (append-only, actor/action/entity/metadata)
 - [ ] Reporting service (PO per vendor, tender, approval)
 - [ ] API Gateway (routing REST -> gRPC, agregasi)
