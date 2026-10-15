@@ -70,6 +70,47 @@ docs/           arsitektur, data model, event, rencana
 scripts/        alat bantu (seed, migrasi)
 ```
 
+## Peta port
+
+Compose memetakan port **host** yang menghindari bentrokan dengan container lain
+di mesin ini (6379 dipakai Redis lain, 8086 dipakai Tiny RDM).
+
+| Service | HTTP (host→container) | gRPC |
+| --- | --- | --- |
+| api-gateway | 8000→8080 | — |
+| vendor-service | 8001→8081 | 9081 |
+| tender-service | 8002→8082 | 9082 |
+| bid-service | 8003→8083 | 9083 |
+| po-service | 8004→8084 | 9084 |
+| approval-service | 8005→8085 | 9085 |
+| audit-service | 8006→8086 | 9086 |
+| reporting-service | 8007→8087 | 9087 |
+| web | 3000 | — |
+| mongo | 27017 | — |
+| redis | **6380→6379** | — |
+| rabbitmq | 5672, 15672 (UI) | — |
+
+## Menjalankan satu service secara lokal
+
+```bash
+export MONGO_URI=mongodb://localhost:27017 MONGO_DATABASE=eproc \
+       REDIS_ADDR=localhost:6380 RABBITMQ_URL=amqp://eproc:eproc@localhost:5672/ \
+       HTTP_ADDR=:8001 GRPC_ADDR=:9081
+go run ./cmd/vendor-service
+```
+
+Token untuk pengujian (belum ada UI login):
+
+```bash
+TOKEN=$(go run ./scripts/mint-token -role admin -tenant demo -user u-admin)
+curl -sS localhost:8001/readyz
+curl -sS -X POST localhost:8001/vendors -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"code":"vnd-001","name":"PT Contoh","email":"sales@contoh.co.id"}'
+```
+
+Cek jalur gRPC internal: `go run ./scripts/grpc-smoke -addr localhost:9081 -tenant demo`
+
 ## Status
 
 - [x] Fase 0 — perencanaan, ruang lingkup, aktor, arsitektur

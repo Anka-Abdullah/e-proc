@@ -101,6 +101,28 @@ func (c *Client) StoreSession(ctx context.Context, token, subject string, ttl ti
 	return c.rdb.Set(ctx, "session:"+token, subject, ttl).Err()
 }
 
+// RevokeToken marks a token as revoked until it would have expired on its own.
+// The marker is what makes logout possible without a session record, so a
+// self-contained JWT stops being accepted immediately after logout.
+func (c *Client) RevokeToken(ctx context.Context, token string, ttl time.Duration) error {
+	if ttl <= 0 {
+		ttl = time.Minute
+	}
+	return c.rdb.Set(ctx, "revoked:"+token, "1", ttl).Err()
+}
+
+// IsRevoked reports whether a token was explicitly revoked.
+func (c *Client) IsRevoked(ctx context.Context, token string) (bool, error) {
+	_, err := c.rdb.Get(ctx, "revoked:"+token).Result()
+	if errors.Is(err, redis.Nil) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
 // SessionSubject returns the subject bound to a session token.
 func (c *Client) SessionSubject(ctx context.Context, token string) (string, error) {
 	subject, err := c.rdb.Get(ctx, "session:"+token).Result()

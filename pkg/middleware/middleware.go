@@ -133,9 +133,17 @@ func (a *Authenticator) Authenticate(next http.Handler) http.Handler {
 			httpx.Fail(w, http.StatusUnauthorized, httpx.CodeUnauthorized, "invalid or expired token")
 			return
 		}
+		// The JWT is self-contained: a missing session record is normal (tokens
+		// minted by CLI tools, service tokens). Only an explicit revocation
+		// marker in Redis invalidates it.
 		if a.sessions != nil {
-			if _, err := a.sessions.SessionSubject(r.Context(), token); err != nil {
-				httpx.Fail(w, http.StatusUnauthorized, httpx.CodeUnauthorized, "session revoked")
+			revoked, err := a.sessions.IsRevoked(r.Context(), token)
+			if err != nil {
+				httpx.Fail(w, http.StatusServiceUnavailable, httpx.CodeInternal, "authorisation store unavailable")
+				return
+			}
+			if revoked {
+				httpx.Fail(w, http.StatusUnauthorized, httpx.CodeUnauthorized, "token revoked")
 				return
 			}
 		}

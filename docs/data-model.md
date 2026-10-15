@@ -25,7 +25,11 @@ Index:
 - `{tenant_id: 1, code: 1}` unique
 - `{tenant_id: 1, name: 1}`
 - `{tenant_id: 1, status: 1, updated_at: -1}`
-- text index `{name: "text", code: "text", email: "text"}`
+- `{tenant_id: 1, email: 1}`
+
+Pencarian teks (`?search=`) memakai regex case-insensitive pada `name`, `code`,
+dan `email` — bukan text index, supaya pencarian sebagian kata (`contoh` cocok
+dengan `PT Contoh Sejahtera`) langsung bekerja tanpa perlu full-text search.
 
 ## tender service (`eproc_tender`)
 

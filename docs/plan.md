@@ -36,16 +36,18 @@ fase berikutnya. Fokusnya MVP yang jalan, terdokumentasi, dan bisa didemokan.
 
 ## Fase 3 — Backend: service inti ⏳
 
-- [ ] Vendor service (CRUD, validasi, status)
+- [x] Vendor service (CRUD, validasi, status) — terverifikasi end-to-end
 - [ ] Tender service (CRUD, publish, close, auto-close scheduler)
 - [ ] Bid service (submit, list per tender, perbandingan harga)
 - [ ] Purchase Order service (buat dari bid, status machine)
 - [ ] Approval service (workflow, approve/reject, history)
 - [ ] Audit service (append-only, actor/action/entity/metadata)
 - [ ] Reporting service (PO per vendor, tender, approval)
-- [ ] Middleware: JWT, RBAC, tenant isolation, request logging, error handling
-- [ ] Komunikasi: REST (external), gRPC (internal), RabbitMQ (event)
-- [ ] Redis: cache, idempotency key, session token
+- [ ] Auth service (login, refresh, logout, manajemen user) — tambahan di luar daftar awal
+- [ ] API Gateway (routing REST -> gRPC, agregasi)
+- [x] Middleware: JWT, RBAC, tenant isolation, request logging, error handling
+- [x] Komunikasi: REST (external), gRPC (internal), RabbitMQ (event, exchange `eproc.events` terbentuk)
+- [x] Redis: cache-through dokumen tunggal + invalidasi, idempotency claim, pencabutan token
 
 ## Fase 4 — Frontend
 
