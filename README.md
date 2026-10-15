@@ -112,6 +112,44 @@ curl -sS -X POST localhost:8001/vendors -H "Authorization: Bearer $TOKEN" \
 
 Cek jalur gRPC internal: `go run ./scripts/grpc-smoke -addr localhost:9081 -tenant demo`
 
+## API Gateway
+
+Klien hanya bicara ke gateway (`:8000`). Gateway memverifikasi JWT di edge,
+menerapkan CORS + rate limit, lalu meneruskan permintaan ke service pemilik
+prefix. Service tetap memverifikasi token dan otorisasinya sendiri (defence in
+depth), jadi RBAC tidak bisa dilewati dengan menembak service langsung.
+
+| Prefix | Service |
+| --- | --- |
+| `POST /api/v1/auth/login` (publik) | auth-service |
+| `/api/v1/auth/*` | auth-service |
+| `/api/v1/vendors` | vendor-service |
+| `/api/v1/tenders` | tender-service |
+| `/api/v1/bids` | bid-service |
+| `/api/v1/purchase-orders` | po-service |
+| `/api/v1/approvals` | approval-service |
+| `/api/v1/audit-logs` | audit-service |
+| `/api/v1/reports` | reporting-service |
+
+`GET /healthz` (liveness) dan `GET /readyz` (kesiapan + status tiap upstream)
+tidak butuh token, dan tidak dihitung oleh rate limiter karena dipakai probe.
+
+Catatan transport: hop gateway → service memakai REST dengan JWT yang sama.
+gRPC dipakai untuk pemanggilan antar-service (mis. `scripts/grpc-smoke`), bukan
+untuk hop ini — jadi jangan mengeklaim gateway berbicara gRPC ke service.
+
+## Menyalakan seluruh stack untuk development
+
+```bash
+docker compose -f deploy/docker/docker-compose.yml up -d mongo redis rabbitmq
+./scripts/dev-up.sh          # build + jalankan 8 service + gateway, log di .dev-logs/
+./scripts/dev-down.sh        # hentikan semua yang dijalankan dev-up
+```
+
+Login pertama (belum ada UI): lihat bagian "Menjalankan satu service" di atas
+untuk membuat token, atau daftarkan user lewat `POST /api/v1/auth/register`
+dengan token admin.
+
 ## Status
 
 - [x] Fase 0 — perencanaan, ruang lingkup, aktor, arsitektur

@@ -23,3 +23,6 @@ web/next-env.d.ts
 reports/
 playwright-report/
 test-results/
+bin/
+.dev-logs/
+.dev-pids/

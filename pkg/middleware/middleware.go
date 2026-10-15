@@ -202,11 +202,23 @@ func RequireRole(roles ...auth.Role) func(http.Handler) http.Handler {
 	}
 }
 
+// probePaths are never rate limited: liveness/readiness endpoints are polled by
+// orchestration and monitoring, and counting those probes against the client
+// budget makes a healthy service look throttled.
+var probePaths = map[string]struct{}{
+	"/healthz": {},
+	"/readyz":  {},
+}
+
 // RateLimit caps requests per client IP per minute using Redis counters.
 func RateLimit(store *cache.Client, limitPerMinute int) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if store == nil || limitPerMinute <= 0 {
+				next.ServeHTTP(w, r)
+				return
+			}
+			if _, isProbe := probePaths[r.URL.Path]; isProbe {
 				next.ServeHTTP(w, r)
 				return
 			}

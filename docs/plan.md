@@ -34,7 +34,7 @@ fase berikutnya. Fokusnya MVP yang jalan, terdokumentasi, dan bisa didemokan.
 - [x] Protobuf untuk Vendor/Tender/Bid/PO/Approval service → `proto/**/*.proto`
 - [x] Review desain (self-review: kontrak proto di-lint `buf lint`, index disesuaikan pola query)
 
-## Fase 3 — Backend: service inti ⏳
+## Fase 3 — Backend: service inti ✅
 
 - [x] Vendor service (CRUD, validasi, status) — terverifikasi end-to-end
 - [x] Tender service (CRUD, publish, close, auto-close scheduler) — terverifikasi end-to-end
@@ -44,7 +44,7 @@ fase berikutnya. Fokusnya MVP yang jalan, terdokumentasi, dan bisa didemokan.
 - [x] Approval service (workflow, approve/reject, history) — terverifikasi end-to-end
 - [x] Audit service (append-only, actor/action/entity/metadata) — terverifikasi end-to-end
 - [x] Reporting service (PO per vendor, tender, approval) — proyeksi dari event, termasuk export CSV
-- [ ] API Gateway (routing REST -> gRPC, agregasi)
+- [x] API Gateway (routing REST -> gRPC, agregasi) — gateway HTTP + auth di edge (catatan: hop gateway→service memakai REST dengan JWT yang sama; gRPC dipakai untuk panggilan antar-service)
 - [x] Middleware: JWT, RBAC, tenant isolation, request logging, error handling
 - [x] Komunikasi: REST (external), gRPC (internal), RabbitMQ (event, exchange `eproc.events` terbentuk)
 - [x] Redis: cache-through dokumen tunggal + invalidasi, idempotency claim, pencabutan token
