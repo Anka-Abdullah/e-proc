@@ -82,15 +82,16 @@ fase berikutnya. Fokusnya MVP yang jalan, terdokumentasi, dan bisa didemokan.
 - [ ] Security test (JWT expiry, RBAC bypass, input validation, rate limit)
 - [ ] Bug fix & refactor
 
-## Fase 7 — CI/CD & deployment
+## Fase 7 — CI/CD & deployment ⏳
 
-- [ ] CI lengkap (build, test, lint, docker build, push image)
-- [ ] Dockerfile per service
-- [ ] docker-compose production
-- [ ] Manifest Kubernetes (opsional)
-- [ ] Environment dev/staging/prod
-- [ ] Monitoring dasar (health check, logging, metrics)
-- [ ] Deploy + dokumentasi deployment
+- [x] CI lengkap (build, test, lint, docker build smoke) — `.github/workflows/ci.yml`
+- [x] Dockerfile untuk setiap service (`Dockerfile.service` dengan build arg SERVICE, `Dockerfile.web` untuk Next.js standalone)
+- [x] docker-compose "production-like": satu perintah `docker compose up -d --build` menjalankan 13 container dengan healthcheck dan urutan start terjaga
+- [x] Manifest Kubernetes (opsional) — `deploy/k8s/` (namespace, configmap, secret, 9 Deployment+Service, web, ingress, contoh infra)
+- [ ] Environment dev/staging/prod terpisah (baru dev yang nyata)
+- [ ] Monitoring dasar (health check + logging sudah; metrics Prometheus/Grafana belum)
+- [ ] Deploy ke server / cloud
+- [ ] Dokumentasi deployment (baru catatan di README + deploy/k8s/README.md)
 
 ## Fase 8 — Dokumentasi & portofolio
 

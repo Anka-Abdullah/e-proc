@@ -8,6 +8,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io"
@@ -71,8 +72,10 @@ func main() {
 		go func() {
 			defer wg.Done()
 			for range jobs {
-				req, err := http.NewRequest(http.MethodGet, *base+*path, nil)
+				reqCtx, cancelReq := context.WithTimeout(context.Background(), 15*time.Second)
+				req, err := http.NewRequestWithContext(reqCtx, http.MethodGet, *base+*path, nil)
 				if err != nil {
+					cancelReq()
 					atomic.AddInt64(&failures, 1)
 					continue
 				}
@@ -81,6 +84,7 @@ func main() {
 				began := time.Now()
 				response, err := client.Do(req)
 				elapsed := time.Since(began)
+				cancelReq()
 				if err != nil {
 					atomic.AddInt64(&failures, 1)
 					continue

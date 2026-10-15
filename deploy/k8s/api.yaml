@@ -1,0 +1,479 @@
+# The eight domain services and the API gateway.
+#
+# Each Deployment is single-purpose: one binary, one port pair (HTTP + gRPC),
+# probes on the service's own /healthz and /readyz, and configuration from the
+# ConfigMap plus the JWT secret. Replace `image:` with your registry path.
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+  namespace: eproc
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: auth-service }
+  template:
+    metadata:
+      labels: { app: auth-service }
+    spec:
+      containers:
+        - name: auth-service
+          image: eproc/auth-service:latest
+          ports:
+            - { name: http, containerPort: 8088 }
+            - { name: grpc, containerPort: 9098 }
+          envFrom:
+            - configMapRef: { name: eproc-config }
+          env:
+            - name: HTTP_ADDR
+              value: ":8088"
+            - name: GRPC_ADDR
+              value: ":9098"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef: { name: eproc-secrets, key: JWT_SECRET }
+          readinessProbe:
+            httpGet: { path: /readyz, port: http }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { cpu: 500m, memory: 256Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: eproc
+spec:
+  selector: { app: auth-service }
+  ports:
+    - { name: http, port: 8088, targetPort: http }
+    - { name: grpc, port: 9098, targetPort: grpc }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vendor-service
+  namespace: eproc
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: vendor-service }
+  template:
+    metadata:
+      labels: { app: vendor-service }
+    spec:
+      containers:
+        - name: vendor-service
+          image: eproc/vendor-service:latest
+          ports:
+            - { name: http, containerPort: 8081 }
+            - { name: grpc, containerPort: 9081 }
+          envFrom:
+            - configMapRef: { name: eproc-config }
+          env:
+            - name: HTTP_ADDR
+              value: ":8081"
+            - name: GRPC_ADDR
+              value: ":9081"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef: { name: eproc-secrets, key: JWT_SECRET }
+          readinessProbe:
+            httpGet: { path: /readyz, port: http }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { cpu: 500m, memory: 256Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vendor-service
+  namespace: eproc
+spec:
+  selector: { app: vendor-service }
+  ports:
+    - { name: http, port: 8081, targetPort: http }
+    - { name: grpc, port: 9081, targetPort: grpc }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tender-service
+  namespace: eproc
+spec:
+  # Single replica: the auto-close scheduler runs in this process, so two pods
+  # would both sweep. Scale it only after moving the scheduler behind a lease.
+  replicas: 1
+  selector:
+    matchLabels: { app: tender-service }
+  template:
+    metadata:
+      labels: { app: tender-service }
+    spec:
+      containers:
+        - name: tender-service
+          image: eproc/tender-service:latest
+          ports:
+            - { name: http, containerPort: 8082 }
+            - { name: grpc, containerPort: 9082 }
+          envFrom:
+            - configMapRef: { name: eproc-config }
+          env:
+            - name: HTTP_ADDR
+              value: ":8082"
+            - name: GRPC_ADDR
+              value: ":9082"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef: { name: eproc-secrets, key: JWT_SECRET }
+          readinessProbe:
+            httpGet: { path: /readyz, port: http }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { cpu: 500m, memory: 256Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tender-service
+  namespace: eproc
+spec:
+  selector: { app: tender-service }
+  ports:
+    - { name: http, port: 8082, targetPort: http }
+    - { name: grpc, port: 9082, targetPort: grpc }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bid-service
+  namespace: eproc
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: bid-service }
+  template:
+    metadata:
+      labels: { app: bid-service }
+    spec:
+      containers:
+        - name: bid-service
+          image: eproc/bid-service:latest
+          ports:
+            - { name: http, containerPort: 8083 }
+            - { name: grpc, containerPort: 9083 }
+          envFrom:
+            - configMapRef: { name: eproc-config }
+          env:
+            - name: HTTP_ADDR
+              value: ":8083"
+            - name: GRPC_ADDR
+              value: ":9083"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef: { name: eproc-secrets, key: JWT_SECRET }
+          readinessProbe:
+            httpGet: { path: /readyz, port: http }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { cpu: 500m, memory: 256Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bid-service
+  namespace: eproc
+spec:
+  selector: { app: bid-service }
+  ports:
+    - { name: http, port: 8083, targetPort: http }
+    - { name: grpc, port: 9083, targetPort: grpc }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: po-service
+  namespace: eproc
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: po-service }
+  template:
+    metadata:
+      labels: { app: po-service }
+    spec:
+      containers:
+        - name: po-service
+          image: eproc/po-service:latest
+          ports:
+            - { name: http, containerPort: 8084 }
+            - { name: grpc, containerPort: 9084 }
+          envFrom:
+            - configMapRef: { name: eproc-config }
+          env:
+            - name: HTTP_ADDR
+              value: ":8084"
+            - name: GRPC_ADDR
+              value: ":9084"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef: { name: eproc-secrets, key: JWT_SECRET }
+          readinessProbe:
+            httpGet: { path: /readyz, port: http }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { cpu: 500m, memory: 256Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: po-service
+  namespace: eproc
+spec:
+  selector: { app: po-service }
+  ports:
+    - { name: http, port: 8084, targetPort: http }
+    - { name: grpc, port: 9084, targetPort: grpc }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: approval-service
+  namespace: eproc
+spec:
+  # Single replica: the reminder sweep runs in this process.
+  replicas: 1
+  selector:
+    matchLabels: { app: approval-service }
+  template:
+    metadata:
+      labels: { app: approval-service }
+    spec:
+      containers:
+        - name: approval-service
+          image: eproc/approval-service:latest
+          ports:
+            - { name: http, containerPort: 8085 }
+            - { name: grpc, containerPort: 9085 }
+          envFrom:
+            - configMapRef: { name: eproc-config }
+          env:
+            - name: HTTP_ADDR
+              value: ":8085"
+            - name: GRPC_ADDR
+              value: ":9085"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef: { name: eproc-secrets, key: JWT_SECRET }
+          readinessProbe:
+            httpGet: { path: /readyz, port: http }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { cpu: 500m, memory: 256Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: approval-service
+  namespace: eproc
+spec:
+  selector: { app: approval-service }
+  ports:
+    - { name: http, port: 8085, targetPort: http }
+    - { name: grpc, port: 9085, targetPort: grpc }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: audit-service
+  namespace: eproc
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: audit-service }
+  template:
+    metadata:
+      labels: { app: audit-service }
+    spec:
+      containers:
+        - name: audit-service
+          image: eproc/audit-service:latest
+          ports:
+            - { name: http, containerPort: 8086 }
+            - { name: grpc, containerPort: 9086 }
+          envFrom:
+            - configMapRef: { name: eproc-config }
+          env:
+            - name: HTTP_ADDR
+              value: ":8086"
+            - name: GRPC_ADDR
+              value: ":9086"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef: { name: eproc-secrets, key: JWT_SECRET }
+          readinessProbe:
+            httpGet: { path: /readyz, port: http }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { cpu: 500m, memory: 256Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: audit-service
+  namespace: eproc
+spec:
+  selector: { app: audit-service }
+  ports:
+    - { name: http, port: 8086, targetPort: http }
+    - { name: grpc, port: 9086, targetPort: grpc }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reporting-service
+  namespace: eproc
+spec:
+  # Single replica: the snapshot scheduler runs in this process.
+  replicas: 1
+  selector:
+    matchLabels: { app: reporting-service }
+  template:
+    metadata:
+      labels: { app: reporting-service }
+    spec:
+      containers:
+        - name: reporting-service
+          image: eproc/reporting-service:latest
+          ports:
+            - { name: http, containerPort: 8087 }
+            - { name: grpc, containerPort: 9087 }
+          envFrom:
+            - configMapRef: { name: eproc-config }
+          env:
+            - name: HTTP_ADDR
+              value: ":8087"
+            - name: GRPC_ADDR
+              value: ":9087"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef: { name: eproc-secrets, key: JWT_SECRET }
+          readinessProbe:
+            httpGet: { path: /readyz, port: http }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { cpu: 500m, memory: 256Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reporting-service
+  namespace: eproc
+spec:
+  selector: { app: reporting-service }
+  ports:
+    - { name: http, port: 8087, targetPort: http }
+    - { name: grpc, port: 9087, targetPort: grpc }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  namespace: eproc
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: api-gateway }
+  template:
+    metadata:
+      labels: { app: api-gateway }
+    spec:
+      containers:
+        - name: api-gateway
+          image: eproc/api-gateway:latest
+          ports:
+            - { name: http, containerPort: 8080 }
+            - { name: grpc, containerPort: 9099 }
+          envFrom:
+            - configMapRef: { name: eproc-config }
+          env:
+            - name: HTTP_ADDR
+              value: ":8080"
+            - name: GRPC_ADDR
+              value: ":9099"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef: { name: eproc-secrets, key: JWT_SECRET }
+          # /readyz reports per-upstream status, so a gateway pod is only ready
+          # when it can actually serve requests.
+          readinessProbe:
+            httpGet: { path: /readyz, port: http }
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            failureThreshold: 3
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests: { cpu: 100m, memory: 128Mi }
+            limits: { cpu: 1000m, memory: 512Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway
+  namespace: eproc
+spec:
+  selector: { app: api-gateway }
+  ports:
+    - { name: http, port: 80, targetPort: http }

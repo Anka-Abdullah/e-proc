@@ -1,0 +1,40 @@
+# Ingress: one host, two path groups.
+#
+#   /api/*  → api-gateway (the only service the browser talks to)
+#   /*      → web
+#
+# Nothing else is exposed: the domain services stay cluster-internal, which is
+# what makes the RBAC in the gateway meaningful.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: eproc
+  namespace: eproc
+  annotations:
+    # WebSocket support matters if you later add live notifications.
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-body-size: "2m"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: eproc.example.com
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: api-gateway
+                port:
+                  name: http
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: web
+                port:
+                  name: http
+  # Enable and adjust once cert-manager (or your certificate workflow) is in place.
+  # tls:
+  #   - hosts: [eproc.example.com]
+  #     secretName: eproc-tls
