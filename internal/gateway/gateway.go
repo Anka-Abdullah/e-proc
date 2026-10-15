@@ -32,25 +32,24 @@ func New(cfg Config, log *slog.Logger) (*Gateway, error) {
 			return nil, err
 		}
 		name := upstream.Name
-		proxy := httputil.NewSingleHostReverseProxy(target)
 
-		// NewSingleHostReverseProxy installs a Director; using Rewrite requires
-		// clearing it, or the proxy refuses to run ("exactly one of Director or
-		// Rewrite set"). Rewrite is the supported API since Go 1.20.
-		proxy.Director = nil
-		proxy.Rewrite = func(pr *httputil.ProxyRequest) {
-			pr.SetURL(target)
-			pr.Out.Host = target.Host
-			pr.SetXForwarded()
-			pr.Out.Header.Set("X-Forwarded-Service", "api-gateway")
-		}
-
-		proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
-			log.ErrorContext(r.Context(), "upstream unreachable",
-				slog.String("service", name),
-				slog.String("path", r.URL.Path),
-				slog.String("error", err.Error()))
-			httpx.Fail(w, http.StatusBadGateway, "bad_gateway", "upstream service "+name+" is unavailable")
+		// Build the proxy directly instead of calling NewSingleHostReverseProxy:
+		// that constructor installs a deprecated Director, and setting both
+		// Director and Rewrite makes the proxy refuse to run.
+		proxy := &httputil.ReverseProxy{
+			Rewrite: func(pr *httputil.ProxyRequest) {
+				pr.SetURL(target)
+				pr.Out.Host = target.Host
+				pr.SetXForwarded()
+				pr.Out.Header.Set("X-Forwarded-Service", "api-gateway")
+			},
+			ErrorHandler: func(w http.ResponseWriter, r *http.Request, err error) {
+				log.ErrorContext(r.Context(), "upstream unreachable",
+					slog.String("service", name),
+					slog.String("path", r.URL.Path),
+					slog.String("error", err.Error()))
+				httpx.Fail(w, http.StatusBadGateway, "bad_gateway", "upstream service "+name+" is unavailable")
+			},
 		}
 		proxies[key] = proxy
 	}
