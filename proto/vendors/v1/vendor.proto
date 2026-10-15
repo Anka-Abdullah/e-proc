@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+package eproc.vendor.v1;
+
+import "google/protobuf/timestamp.proto";
+import "common/v1/common.proto";
+
+option go_package = "github.com/ank/e-proc/proto/gen/vendor/v1;vendorv1";
+
+// VendorStatus is the lifecycle state of a supplier.
+enum VendorStatus {
+  VENDOR_STATUS_UNSPECIFIED = 0;
+  VENDOR_STATUS_PENDING = 1;
+  VENDOR_STATUS_ACTIVE = 2;
+  VENDOR_STATUS_SUSPENDED = 3;
+}
+
+// Vendor is a supplier registered in the platform.
+message Vendor {
+  string id = 1;
+  string tenant_id = 2;
+  string code = 3;
+  string name = 4;
+  string email = 5;
+  string phone = 6;
+  string address = 7;
+  VendorStatus status = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
+  string created_by = 11;
+}
+
+message CreateVendorRequest {
+  string tenant_id = 1;
+  string code = 2;
+  string name = 3;
+  string email = 4;
+  string phone = 5;
+  string address = 6;
+  string actor_id = 7;
+}
+
+message CreateVendorResponse { Vendor vendor = 1; }
+
+message GetVendorRequest {
+  string tenant_id = 1;
+  string id = 2;
+}
+message GetVendorResponse { Vendor vendor = 1; }
+
+message UpdateVendorRequest {
+  string tenant_id = 1;
+  string id = 2;
+  string name = 3;
+  string email = 4;
+  string phone = 5;
+  string address = 6;
+  string actor_id = 7;
+}
+message UpdateVendorResponse { Vendor vendor = 1; }
+
+message SetVendorStatusRequest {
+  string tenant_id = 1;
+  string id = 2;
+  VendorStatus status = 3;
+  string actor_id = 4;
+}
+message SetVendorStatusResponse { Vendor vendor = 1; }
+
+message ListVendorsRequest {
+  string tenant_id = 1;
+  string search = 2;
+  VendorStatus status = 3;
+  eproc.common.v1.PageRequest page = 4;
+}
+message ListVendorsResponse {
+  repeated Vendor vendors = 1;
+  eproc.common.v1.PageResponse page = 2;
+}
+
+// VendorService manages the supplier master data.
+service VendorService {
+  rpc CreateVendor(CreateVendorRequest) returns (CreateVendorResponse);
+  rpc GetVendor(GetVendorRequest) returns (GetVendorResponse);
+  rpc UpdateVendor(UpdateVendorRequest) returns (UpdateVendorResponse);
+  rpc SetVendorStatus(SetVendorStatusRequest) returns (SetVendorStatusResponse);
+  rpc ListVendors(ListVendorsRequest) returns (ListVendorsResponse);
+}
