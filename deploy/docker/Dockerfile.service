@@ -1,20 +1,32 @@
 # Multi-stage build for every Go service in the monorepo.
-# The service is selected with --build-arg SERVICE=<cmd folder name>.
+#
+#   docker build -f deploy/docker/Dockerfile.service \
+#     --build-arg SERVICE=vendor-service -t eproc/vendor-service .
+#
+# The result is a static binary on a scratch base: no shell, no package manager,
+# no userland at all. Roughly 25 MB per service instead of ~50 MB, and nothing for
+# an attacker to use as a foothold after a compromise.
 FROM golang:1.26-alpine AS builder
 
 ARG SERVICE
 WORKDIR /src
 
-RUN apk add --no-cache git ca-certificates
+# Limit how many packages the Go compiler builds at once. On a machine with little
+# RAM (this one has 8 GB, and the Docker VM has less) the default NumCPU-wide
+# compile gets OOM-killed mid-build — `signal: killed` from .../compile with no
+# other error — and the whole build then dies with a transport error.
+ARG GOFLAGS=-p=2
+ENV GOFLAGS=${GOFLAGS}
 
-# Cache dependencies before copying the full source tree.
-#
-# The module cache lives in a BuildKit cache mount, so a retry after a network
-# failure reuses what already arrived instead of starting from zero. On a slow or
-# flaky link this is the difference between "eventually builds" and "never
-# finishes": a dropped connection mid-download otherwise throws everything away.
-# The bounded retry loop covers transient proxy errors (`stream error`, 5xx),
-# not a bad module path — those still fail after three attempts.
+# git: only needed when a module falls back to VCS instead of the proxy.
+# ca-certificates + tzdata: copied into the runtime image below, because scratch
+# ships neither — TLS roots and time zones would otherwise be missing.
+RUN apk add --no-cache git ca-certificates tzdata
+
+# Dependency layer. The module and build caches are BuildKit cache mounts, so a
+# retry after a dropped connection reuses what already arrived instead of starting
+# from zero. The bounded retry loop covers transient proxy errors (`stream error`,
+# 5xx); a genuinely wrong module path still fails after three attempts.
 COPY go.mod go.sum ./
 RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
@@ -25,22 +37,43 @@ RUN --mount=type=cache,target=/go/pkg/mod \
         sleep 5; \
     done
 
-COPY . .
+# Only what the build actually reads. `COPY . .` also pulled in web/, docs/ and
+# deploy/, so editing any of them invalidated the compile layer below.
+# scripts/ is deliberately absent: it holds developer tools (token minter, load
+# test) that no service imports, and .dockerignore keeps it out of the context.
+COPY cmd/ ./cmd/
+COPY internal/ ./internal/
+COPY pkg/ ./pkg/
+COPY proto/ ./proto/
 
 RUN test -n "$SERVICE" || (echo "SERVICE build arg is required" && exit 1)
+
+# -trimpath        : keep local paths out of the binary.
+# -tags netgo,osusergo: pure-Go DNS and user lookup, so the binary does not depend
+#                      on libc, /etc/nsswitch.conf or /etc/passwd — this is what
+#                      makes the scratch runtime below safe.
+# -ldflags -s -w   : drop the symbol table and DWARF debug info.
+#          -buildid=: drop the build id, so equal inputs produce equal output.
 RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
-    CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" \
-    -o /out/service ./cmd/${SERVICE}
+    CGO_ENABLED=0 GOOS=linux go build \
+        -trimpath \
+        -tags=netgo,osusergo \
+        -ldflags="-s -w -buildid=" \
+        -o /out/service ./cmd/${SERVICE}
 
-FROM alpine:3.21
+# Runtime: an empty filesystem plus three copied paths. No shell means no wget or
+# curl for a health probe, so the probe is the binary itself (`service
+# -healthcheck`) — that is what the compose and Kubernetes manifests call.
+FROM scratch
 
-RUN apk add --no-cache ca-certificates tzdata && \
-    adduser -D -u 10001 appuser
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
+COPY --from=builder /out/service /service
 
-COPY --from=builder /out/service /usr/local/bin/service
+# Numeric uid:gid because scratch has no /etc/passwd to name a user in.
+# No EXPOSE: each service uses a different port pair and the real mapping lives in
+# compose/k8s where it can be read next to the service that uses it.
+USER 10001:10001
 
-USER appuser
-EXPOSE 8080 9090
-
-ENTRYPOINT ["/usr/local/bin/service"]
+ENTRYPOINT ["/service"]

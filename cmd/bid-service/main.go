@@ -19,6 +19,10 @@ import (
 )
 
 func main() {
+	// Runs as its own container probe (`bid-service -healthcheck`) and exits
+	// immediately when that flag is absent.
+	app.MaybeHealthcheck("bid-service")
+
 	cfg, err := config.Load("bid-service")
 	if err != nil {
 		slog.Error("configuration error", slog.String("error", err.Error()))

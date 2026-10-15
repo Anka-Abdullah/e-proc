@@ -53,6 +53,48 @@ daftar yang harus diisi. Poin pentingnya:
 - Probe memakai `/healthz` (liveness) dan `/readyz` (readiness) yang sama dengan
   compose, termasuk `/readyz` gateway yang melaporkan status tiap upstream.
 
+## Pemecahan masalah
+
+### Build berhenti dengan `rpc error: ... EOF`, `database not open`, atau container tiba-tiba `Up N seconds`
+
+Itu tanda **VM Docker-nya dimatikan di tengah build**, bukan Dockerfile yang salah.
+Di mesin ini (RAM 8 GB) membangun sepuluh image secara paralel menghabiskan
+memori, VM OrbStack dimatikan, dan BuildKit melaporkan error transportasi — lalu
+semua container (termasuk infrastruktur) restart bersamaan. Ciri khasnya: beberapa
+`buildkit` target dibatalkan (`CANCELED`) tanpa error kompilasi.
+
+Bangun berurutan, lalu jalankan:
+
+```bash
+COMPOSE_PARALLEL_LIMIT=1 docker compose build    # satu image pada satu waktu
+docker compose up -d                             # hanya membuat container, tidak build
+```
+
+Pemeriksaan cepat kalau gejalanya muncul lagi:
+
+```bash
+docker info --format '{{.ServerVersion}} running={{.ContainersRunning}}'   # daemon hidup?
+docker run --rm alpine df -h /                                             # ruang di dalam VM
+docker system df                                                           # image + cache
+memory_pressure | tail -3                                                  # tekanan memori host
+```
+
+### Unduhan lambat atau gagal di tengah (`stream error`, `UND_ERR_SOCKET`)
+
+Kedua Dockerfile sudah memakai BuildKit cache mount (module cache Go dan pnpm
+store) plus retry terbatas, sehingga percobaan ulang memakai yang sudah terunduh.
+Kalau jaringan sangat lambat, selesaikan per service:
+
+```bash
+COMPOSE_PARALLEL_LIMIT=1 docker compose build web     # image terberat, sekali saja
+```
+
+### Port sudah dipakai
+
+Gejalanya `Bind for 0.0.0.0:XXXX failed: port is already allocated`. Lihat tabel
+port di atas; Redis sengaja di `6380` dan audit-service di `8006` karena `6379`
+dan `8086` sering sudah dipakai layanan lain.
+
 ## Rahasia dan konfigurasi
 
 Semua konfigurasi lewat environment variable (`pkg/config`). Yang tidak boleh

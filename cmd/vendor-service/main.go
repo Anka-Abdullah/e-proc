@@ -19,6 +19,10 @@ import (
 )
 
 func main() {
+	// Runs as its own container probe (`vendor-service -healthcheck`) and exits
+	// immediately when that flag is absent.
+	app.MaybeHealthcheck("vendor-service")
+
 	cfg, err := config.Load("vendor-service")
 	if err != nil {
 		slog.Error("configuration error", slog.String("error", err.Error()))

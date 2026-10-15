@@ -19,6 +19,7 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"github.com/ank/e-proc/internal/gateway"
+	"github.com/ank/e-proc/pkg/app"
 	"github.com/ank/e-proc/pkg/cache"
 	"github.com/ank/e-proc/pkg/config"
 	"github.com/ank/e-proc/pkg/httpx"
@@ -27,6 +28,10 @@ import (
 )
 
 func main() {
+	// Runs as its own container probe (`api-gateway -healthcheck`) and exits
+	// immediately when that flag is absent.
+	app.MaybeHealthcheck("api-gateway")
+
 	cfg, err := config.Load("api-gateway")
 	if err != nil {
 		slog.Error("configuration error", slog.String("error", err.Error()))

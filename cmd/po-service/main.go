@@ -25,6 +25,10 @@ import (
 const poQueue = "po.events"
 
 func main() {
+	// Runs as its own container probe (`po-service -healthcheck`) and exits
+	// immediately when that flag is absent.
+	app.MaybeHealthcheck("po-service")
+
 	cfg, err := config.Load("po-service")
 	if err != nil {
 		slog.Error("configuration error", slog.String("error", err.Error()))

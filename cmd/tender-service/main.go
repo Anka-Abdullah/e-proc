@@ -24,6 +24,10 @@ import (
 // comes from config so a deployment (or a test) can shorten it.
 
 func main() {
+	// Runs as its own container probe (`tender-service -healthcheck`) and exits
+	// immediately when that flag is absent.
+	app.MaybeHealthcheck("tender-service")
+
 	cfg, err := config.Load("tender-service")
 	if err != nil {
 		slog.Error("configuration error", slog.String("error", err.Error()))

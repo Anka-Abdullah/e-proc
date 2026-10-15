@@ -22,6 +22,10 @@ import (
 const reportingQueue = "reporting.events"
 
 func main() {
+	// Runs as its own container probe (`reporting-service -healthcheck`) and exits
+	// immediately when that flag is absent.
+	app.MaybeHealthcheck("reporting-service")
+
 	cfg, err := config.Load("reporting-service")
 	if err != nil {
 		slog.Error("configuration error", slog.String("error", err.Error()))

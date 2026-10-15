@@ -25,6 +25,10 @@ import (
 const approvalQueue = "approval.events"
 
 func main() {
+	// Runs as its own container probe (`approval-service -healthcheck`) and exits
+	// immediately when that flag is absent.
+	app.MaybeHealthcheck("approval-service")
+
 	cfg, err := config.Load("approval-service")
 	if err != nil {
 		slog.Error("configuration error", slog.String("error", err.Error()))

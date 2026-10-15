@@ -17,6 +17,10 @@ import (
 )
 
 func main() {
+	// Runs as its own container probe (`auth-service -healthcheck`) and exits
+	// immediately when that flag is absent.
+	app.MaybeHealthcheck("auth-service")
+
 	cfg, err := config.Load("auth-service")
 	if err != nil {
 		slog.Error("configuration error", slog.String("error", err.Error()))

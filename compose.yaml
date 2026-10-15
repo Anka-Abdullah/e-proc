@@ -8,5 +8,13 @@
 # The real definition lives in deploy/docker/docker-compose.yml and is included
 # here so the command works without -f. Paths inside the included file are
 # resolved relative to that file, so its build contexts stay correct.
+#
+# `name` is repeated here on purpose: it is NOT inherited through `include`, and
+# without it this file would create a second project (named after the directory,
+# "e-proc") with its own containers and volumes — so the two ways of running the
+# stack would collide over the same container names.
+name: eproc
+
 include:
   - path: deploy/docker/docker-compose.yml
+
