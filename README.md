@@ -35,19 +35,53 @@ Data model dan index: [`docs/data-model.md`](docs/data-model.md).
 Katalog event: [`docs/events.md`](docs/events.md).
 Rencana pengerjaan 10 fase: [`docs/plan.md`](docs/plan.md).
 
-## Menjalankan
+## Menjalankan semuanya dengan satu perintah
 
-Butuh Go 1.26+, Node 24+, pnpm, Docker.
+Cara tercepat mencoba seluruh platform (13 container: 3 infrastruktur, 8 service,
+gateway, dan web):
+
+```bash
+docker compose up -d --build          # dari akar repo
+docker compose ps                     # tunggu sampai semuanya "healthy"
+docker compose logs -f api-gateway    # ikuti log gateway
+docker compose down                   # hentikan (volume tetap)
+docker compose down -v                # hentikan dan hapus data
+```
+
+Yang perlu diketahui tentang perintah itu:
+
+- Definisi aslinya di `deploy/docker/docker-compose.yml`; `compose.yaml` di akar
+  repo hanya `include` file itu, sehingga `docker compose` bekerja tanpa `-f`.
+- Urutan start dijaga `depends_on: condition: service_healthy`: gateway baru
+  menyala setelah 8 upstream menjawab `/healthz`, dan web setelah gateway sehat.
+  Jadi begitu `ps` hijau, API-nya memang siap — bukan sekadar container "Up".
+- Alamat antar-service memakai nama compose (`http://tender-service:8082`),
+  bukan `localhost`. Yang tetap `localhost` hanya `NEXT_PUBLIC_API_URL`, karena
+  nilai itu dipakai **browser**, bukan container.
+- Port host dipilih agar tidak bentrok dengan layanan umum: gateway `8000`,
+  service `8001`–`8008`, web `3000`, Redis `6380` (6379 sering sudah dipakai).
+- `JWT_SECRET` default adalah nilai pengembangan. Untuk pemakaian nyata, salin
+  `.env.example` → `.env`, isi nilai asli, dan `APP_ENV=production` akan menolak
+  boot bila `JWT_SECRET` masih default.
+
+## Menjalankan untuk pengembangan (log ke terminal, hot reload frontend)
 
 ```bash
 cp .env.example .env          # sesuaikan bila perlu
-
-make infra-up                 # Mongo + Redis + RabbitMQ
-make run SERVICE=vendor-service   # jalankan satu service (terminal terpisah)
-make up                       # atau seluruh stack via Docker Compose
+./scripts/dev-up.sh           # build + jalankan 8 service + gateway, log di .dev-logs/
+./scripts/dev-down.sh         # hentikan semuanya (container infra tetap jalan)
 ```
 
-Frontend:
+Beberapa perintah lain:
+
+```bash
+make infra-up                       # hanya Mongo + Redis + RabbitMQ
+make run SERVICE=vendor-service     # satu service saja, log ke terminal
+make up / make down                 # alias untuk docker compose
+make help                           # daftar lengkap
+```
+
+Frontend secara terpisah (hot reload):
 
 ```bash
 cd web
@@ -64,7 +98,18 @@ Catatan autentikasi UI: token disimpan di `localStorage` untuk MVP. Cookie
 httpOnly yang di-set gateway adalah langkah pengerasan berikutnya, dan sudah
 dicatat sebagai utang teknis di `web/src/lib/api.ts`.
 
-Perintah lain: `make help`.
+## Pengujian
+
+```bash
+go test ./...                    # unit test semua paket Go
+cd web && pnpm lint && pnpm exec tsc --noEmit
+
+./scripts/e2e.sh                 # 35 asersi rantai penuh lewat gateway (stack harus jalan)
+./scripts/security-check.sh      # 16 asersi keamanan (token, RBAC, input, tenant, rate limit)
+go run ./scripts/loadtest -n 500 -c 25   # latensi & throughput
+
+cd web && pnpm exec playwright test      # 7 tes UI di browser sungguhan
+```
 
 ## Struktur repositori
 

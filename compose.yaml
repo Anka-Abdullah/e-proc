@@ -1,0 +1,12 @@
+# One command from the repository root:
+#
+#   docker compose up -d --build      # start everything
+#   docker compose logs -f api-gateway
+#   docker compose down               # stop, keep volumes
+#   docker compose down -v            # stop and delete data
+#
+# The real definition lives in deploy/docker/docker-compose.yml and is included
+# here so the command works without -f. Paths inside the included file are
+# resolved relative to that file, so its build contexts stay correct.
+include:
+  - path: deploy/docker/docker-compose.yml

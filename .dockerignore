@@ -1,0 +1,30 @@
+# Build context hygiene.
+#
+# Without this file, `docker compose build` ships node_modules, build output and
+# local logs to the daemon: the context was measured at ~520 MB, and every image
+# build paid for it. The Go images need only cmd/, internal/, pkg/, proto/ and the
+# module files; the web image needs web/ without its node_modules and .next.
+
+.git
+.gitignore
+.github
+
+# Local tooling output
+bin/
+.dev-logs/
+.dev-pids/
+coverage.out
+*.log
+**/.DS_Store
+
+# Frontend: dependencies and build output are produced inside the image
+**/node_modules
+web/.next/
+web/out/
+web/tsconfig.tsbuildinfo
+web/playwright-report/
+web/test-results/
+
+# Docs and test scripts are not needed to build any image
+docs/
+scripts/
