@@ -347,7 +347,9 @@ services:
     ports:
       - "3000:3000"
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3000/login"]
+      # 127.0.0.1 rather than localhost: the container's /etc/hosts lists ::1 for
+      # localhost, and a probe that resolves to IPv6 fails against an IPv4 listener.
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/login"]
       interval: 15s
       timeout: 5s
       retries: 10

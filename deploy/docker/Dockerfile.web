@@ -44,11 +44,17 @@ FROM node:24-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+# Docker sets HOSTNAME to the container id, and Next's standalone server binds to
+# whatever HOSTNAME holds — so without this the app listens only on the container's
+# own IP and an in-container probe against 127.0.0.1 gets "Connection refused"
+# while the published port still works from outside. Pinning it to 0.0.0.0 makes
+# loopback and the container network both reachable.
+ENV HOSTNAME=0.0.0.0
+ENV PORT=3000
 RUN addgroup -g 10001 -S nodejs && adduser -S nextjs -u 10001
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 USER nextjs
 EXPOSE 3000
-ENV PORT=3000
 CMD ["node", "server.js"]

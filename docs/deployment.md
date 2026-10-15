@@ -81,6 +81,21 @@ sesuatu yang pantas dilakukan diam-diam.
 
 ## Pemecahan masalah
 
+### Container web sehat tapi berstatus `unhealthy`
+
+Gejalanya: `/login` dan `/dashboard` menjawab 200 dari host, tapi `docker compose
+ps` menandai web `unhealthy`, dan probe dari dalam container gagal dengan
+`wget: can't connect to remote host: Connection refused`.
+
+Penyebabnya bukan aplikasinya. Docker men-set `HOSTNAME` ke ID container, dan
+`server.js` hasil build standalone Next mengikat ke `process.env.HOSTNAME` — jadi
+server hanya mendengarkan di IP container, bukan di loopback. Port yang
+dipublikasikan tetap bekerja, karena port itu diteruskan ke IP container.
+
+Perbaikannya ada di `Dockerfile.web`: `ENV HOSTNAME=0.0.0.0`. Sekalian, probe
+memakai `127.0.0.1` alih-alih `localhost`, karena `/etc/hosts` container memetakan
+`localhost` juga ke `::1` dan probe yang memilih IPv6 akan gagal pada listener IPv4.
+
 ### Build berhenti dengan `rpc error: ... EOF`, `database not open`, atau container tiba-tiba `Up N seconds`
 
 Itu tanda **VM Docker-nya dimatikan di tengah build**, bukan Dockerfile yang salah.
