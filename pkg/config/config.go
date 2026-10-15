@@ -36,28 +36,45 @@ type Config struct {
 	// AutoCloseInterval controls how often the tender scheduler looks for
 	// expired tenders. Configurable so it can be exercised in tests.
 	AutoCloseInterval time.Duration
+	// ApprovalAssignee receives approvals created automatically from events.
+	ApprovalAssignee string
+	// ApprovalReminderAfter is how long an approval may sit pending before a
+	// reminder is emitted.
+	ApprovalReminderAfter time.Duration
+	// ReminderInterval is how often the reminder sweep runs.
+	ReminderInterval time.Duration
+	// ReportInterval is how often the reporting service snapshots its numbers.
+	ReportInterval time.Duration
+	// TenderGRPCAddr enables cross-service validation over gRPC (bid-service
+	// checks the tender before accepting a quotation). Empty disables it.
+	TenderGRPCAddr string
 }
 
 // Load builds a Config for the named service. Env vars override every default,
 // so the same binary runs in dev, staging and prod without code changes.
 func Load(service string) (Config, error) {
 	cfg := Config{
-		Env:               env("APP_ENV", "development"),
-		LogLevel:          env("LOG_LEVEL", "info"),
-		Service:           service,
-		HTTPAddr:          env("HTTP_ADDR", ":8080"),
-		GRPCAddr:          env("GRPC_ADDR", ":9090"),
-		GatewayURL:        env("GATEWAY_URL", "http://localhost:8000"),
-		MongoURI:          env("MONGO_URI", "mongodb://localhost:27017"),
-		MongoDatabase:     env("MONGO_DATABASE", "eproc"),
-		RedisAddr:         env("REDIS_ADDR", "localhost:6379"),
-		RedisPassword:     env("REDIS_PASSWORD", ""),
-		RabbitURL:         env("RABBITMQ_URL", "amqp://guest:guest@localhost:5672/"),
-		JWTSecret:         env("JWT_SECRET", "dev-secret-change-me"),
-		JWTTTL:            envDuration("JWT_TTL", 12*time.Hour),
-		RateLimitRPS:      envInt("RATE_LIMIT_RPS", 50),
-		ApprovalThreshold: envFloat("APPROVAL_THRESHOLD", 50_000_000),
-		AutoCloseInterval: envDuration("AUTO_CLOSE_INTERVAL", time.Minute),
+		Env:                   env("APP_ENV", "development"),
+		LogLevel:              env("LOG_LEVEL", "info"),
+		Service:               service,
+		HTTPAddr:              env("HTTP_ADDR", ":8080"),
+		GRPCAddr:              env("GRPC_ADDR", ":9090"),
+		GatewayURL:            env("GATEWAY_URL", "http://localhost:8000"),
+		MongoURI:              env("MONGO_URI", "mongodb://localhost:27017"),
+		MongoDatabase:         env("MONGO_DATABASE", "eproc"),
+		RedisAddr:             env("REDIS_ADDR", "localhost:6379"),
+		RedisPassword:         env("REDIS_PASSWORD", ""),
+		RabbitURL:             env("RABBITMQ_URL", "amqp://guest:guest@localhost:5672/"),
+		JWTSecret:             env("JWT_SECRET", "dev-secret-change-me"),
+		JWTTTL:                envDuration("JWT_TTL", 12*time.Hour),
+		RateLimitRPS:          envInt("RATE_LIMIT_RPS", 50),
+		ApprovalThreshold:     envFloat("APPROVAL_THRESHOLD", 50_000_000),
+		AutoCloseInterval:     envDuration("AUTO_CLOSE_INTERVAL", time.Minute),
+		ApprovalAssignee:      env("APPROVAL_ASSIGNEE", "u-approver"),
+		ApprovalReminderAfter: envDuration("APPROVAL_REMINDER_AFTER", 24*time.Hour),
+		ReminderInterval:      envDuration("REMINDER_INTERVAL", time.Hour),
+		ReportInterval:        envDuration("REPORT_INTERVAL", 24*time.Hour),
+		TenderGRPCAddr:        env("TENDER_GRPC_ADDR", ""),
 	}
 
 	cfg.RedisDB = envInt("REDIS_DB", 0)

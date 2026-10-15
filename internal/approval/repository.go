@@ -160,6 +160,51 @@ func (r *Repository) List(ctx context.Context, f ListFilter) ([]Approval, int64,
 	return approvals, total, nil
 }
 
+// ListTenants returns the tenants that have approvals. The service has no tenant
+// registry, so the reminder sweep derives them from its own data.
+func (r *Repository) ListTenants(ctx context.Context) ([]string, error) {
+	cursor, err := r.coll.Aggregate(ctx, mongo.Pipeline{
+		{{Key: "$group", Value: bson.M{"_id": "$tenant_id"}}},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("list approval tenants: %w", err)
+	}
+	defer func() { _ = cursor.Close(ctx) }()
+
+	var rows []struct {
+		TenantID string `bson:"_id"`
+	}
+	if err := cursor.All(ctx, &rows); err != nil {
+		return nil, fmt.Errorf("decode approval tenants: %w", err)
+	}
+
+	tenants := make([]string, 0, len(rows))
+	for _, row := range rows {
+		if row.TenantID != "" {
+			tenants = append(tenants, row.TenantID)
+		}
+	}
+	return tenants, nil
+}
+
+// ListPendingOlderThan returns pending approvals created before cutoff for one
+// tenant.
+func (r *Repository) ListPendingOlderThan(ctx context.Context, tenantID string, cutoff time.Time, limit int64) ([]Approval, error) {
+	cursor, err := r.coll.Find(ctx,
+		bson.M{"tenant_id": tenantID, "status": StatusPending, "created_at": bson.M{"$lt": cutoff}},
+		options.Find().SetSort(bson.D{{Key: "created_at", Value: 1}}).SetLimit(limit))
+	if err != nil {
+		return nil, fmt.Errorf("list pending approvals: %w", err)
+	}
+	defer func() { _ = cursor.Close(ctx) }()
+
+	pending := make([]Approval, 0, limit)
+	if err := cursor.All(ctx, &pending); err != nil {
+		return nil, fmt.Errorf("decode pending approvals: %w", err)
+	}
+	return pending, nil
+}
+
 // StatsByStatus counts approvals per status, used by the reporting service.
 func (r *Repository) StatsByStatus(ctx context.Context, tenantID string) (map[string]int64, error) {
 	pipeline := mongo.Pipeline{

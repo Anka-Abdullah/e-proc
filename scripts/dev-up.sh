@@ -26,6 +26,13 @@ export JWT_TTL="${JWT_TTL:-12h}"
 export APPROVAL_THRESHOLD="${APPROVAL_THRESHOLD:-50000000}"
 export AUTO_CLOSE_INTERVAL="${AUTO_CLOSE_INTERVAL:-1m}"
 export FRONTEND_ORIGIN="${FRONTEND_ORIGIN:-http://localhost:3000}"
+# Cross-service validation: bid-service checks the tender over gRPC.
+export TENDER_GRPC_ADDR="${TENDER_GRPC_ADDR:-localhost:9082}"
+# Who receives approvals created automatically from events.
+export APPROVAL_ASSIGNEE="${APPROVAL_ASSIGNEE:-u-approver}"
+export APPROVAL_REMINDER_AFTER="${APPROVAL_REMINDER_AFTER:-24h}"
+export REMINDER_INTERVAL="${REMINDER_INTERVAL:-1h}"
+export REPORT_INTERVAL="${REPORT_INTERVAL:-24h}"
 
 # name:http_port:grpc_port
 SERVICES=(

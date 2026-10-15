@@ -21,11 +21,15 @@ type Service struct {
 	cache     *cache.Client
 	publisher *broker.Publisher
 	log       *slog.Logger
+	// tender validates the tender over gRPC when configured; nil means the
+	// cross-service check is disabled (documented, not silently ignored).
+	tender TenderValidator
 }
 
-// NewService builds the bid service.
-func NewService(repo *Repository, cacheClient *cache.Client, publisher *broker.Publisher, log *slog.Logger) *Service {
-	return &Service{repo: repo, cache: cacheClient, publisher: publisher, log: log}
+// NewService builds the bid service. validator may be nil, in which case bids
+// are accepted without checking the tender's state.
+func NewService(repo *Repository, cacheClient *cache.Client, publisher *broker.Publisher, validator TenderValidator, log *slog.Logger) *Service {
+	return &Service{repo: repo, cache: cacheClient, publisher: publisher, tender: validator, log: log}
 }
 
 // EnsureIndexes is called once at boot.
@@ -34,11 +38,22 @@ func (s *Service) EnsureIndexes(ctx context.Context) error { return s.repo.Ensur
 // CacheKey is the Redis key for one bid document.
 func CacheKey(id string) string { return "cache:bid:" + id }
 
-// Submit validates a quotation, prices it server-side and stores it.
+// Submit validates a quotation, prices it server-side and stores it. When the
+// tender validator is configured, the tender must still be open: that check is a
+// gRPC call to tender-service, because this service must not read its data.
 func (s *Service) Submit(ctx context.Context, in SubmitInput, actorID string) (*Bid, error) {
 	in.Normalize()
 	if errs := in.Validate(); errs.Any() {
 		return nil, apperr.NewValidation(errs)
+	}
+
+	if s.tender != nil {
+		if err := s.tender.EnsureOpen(ctx, in.TenantID, in.TenderID); err != nil {
+			return nil, err
+		}
+	} else {
+		s.log.WarnContext(ctx, "tender validation skipped: TENDER_GRPC_ADDR is not configured",
+			slog.String("tender_id", in.TenderID))
 	}
 
 	items, total := in.PriceItems()

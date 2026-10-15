@@ -25,6 +25,7 @@ routing key = nama event. Envelope-nya seragam (`pkg/broker.Event`):
 | `po.created` | po-service | approval-service, audit-service, reporting-service | `po_id`, `number`, `vendor_id`, `total`, `requires_approval`, `status` |
 | `approval.requested` | approval-service | audit-service, reporting-service | `approval_id`, `entity_type`, `entity_id`, `amount`, `assigned_to` |
 | `approval.decided` | approval-service | audit-service, reporting-service | `approval_id`, `entity_type`, `entity_id`, `decision`, `amount` |
+| `approval.reminder` | approval-service (scheduler) | audit-service, notification | `approval_id`, `entity_id`, `assigned_to`, `amount`, `waiting_for` |
 | `po.approved` | approval-service (via po-service status) | po-service, audit-service, reporting-service | `po_id`, `approval_id`, `amount` |
 | `po.issued` | po-service | audit-service, reporting-service | `po_id`, `number`, `vendor_id`, `total` |
 | `po.rejected` | approval-service | po-service, audit-service | `po_id`, `approval_id`, `comment` |

@@ -19,6 +19,7 @@ func (s *Service) MountProtected(r chi.Router) {
 		r.With(middleware.RequirePermission(auth.PermReportRead)).Get("/po-by-vendor", s.handlePOByVendor)
 		r.With(middleware.RequirePermission(auth.PermReportRead)).Get("/tender-summary", s.handleTenderSummary)
 		r.With(middleware.RequirePermission(auth.PermReportRead)).Get("/approval-summary", s.handleApprovalSummary)
+		r.With(middleware.RequirePermission(auth.PermReportRead)).Get("/snapshot", s.handleSnapshot)
 	})
 }
 
@@ -70,4 +71,23 @@ func (s *Service) handleApprovalSummary(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	httpx.OK(w, summary)
+}
+
+// handleSnapshot returns the newest stored periodic snapshot for the tenant, or
+// a freshly built one when the scheduler has not run yet.
+func (s *Service) handleSnapshot(w http.ResponseWriter, r *http.Request) {
+	claims := middleware.ClaimsFrom(r.Context())
+
+	snapshot, err := s.LatestSnapshot(r.Context(), claims.TenantID)
+	if err == nil {
+		httpx.OK(w, map[string]any{"snapshot": snapshot, "source": "stored"})
+		return
+	}
+
+	built, buildErr := s.BuildSnapshot(r.Context(), claims.TenantID)
+	if buildErr != nil {
+		httpx.FromError(w, buildErr)
+		return
+	}
+	httpx.OK(w, map[string]any{"snapshot": built, "source": "built-on-demand"})
 }

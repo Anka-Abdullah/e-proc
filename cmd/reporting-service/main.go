@@ -6,6 +6,7 @@ import (
 	"context"
 	"log/slog"
 	"os"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 
@@ -43,10 +44,15 @@ func main() {
 		log.Error("index setup failed", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
+	if err := repo.EnsureSnapshotIndexes(ctx); err != nil {
+		log.Error("snapshot index setup failed", slog.String("error", err.Error()))
+		os.Exit(1)
+	}
 
 	consumerCtx, stopConsumer := context.WithCancel(ctx)
 	defer stopConsumer()
 	go runProjector(consumerCtx, cfg, projector, log)
+	go runSnapshotScheduler(consumerCtx, cfg, svc, log)
 
 	err = app.Run(ctx, *deps, app.Options{
 		Authenticated: func(r chi.Router, _ app.Deps, _ *middleware.Authenticator) {
@@ -72,5 +78,34 @@ func runProjector(ctx context.Context, cfg config.Config, projector *reporting.P
 		slog.Int("routing_keys", len(reporting.RoutingKeys())))
 	if err := consumer.Run(ctx, projector.Handler()); err != nil {
 		log.Error("reporting projector stopped", slog.String("error", err.Error()))
+	}
+}
+
+// runSnapshotScheduler writes a periodic snapshot per tenant, so past numbers
+// survive later changes to the projections.
+func runSnapshotScheduler(ctx context.Context, cfg config.Config, svc *reporting.Service, log *slog.Logger) {
+	interval := cfg.ReportInterval
+	if interval <= 0 {
+		interval = 24 * time.Hour
+	}
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+
+	log.Info("report snapshot scheduler started", slog.Duration("interval", interval))
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			written, err := svc.SnapshotAll(ctx)
+			if err != nil {
+				log.ErrorContext(ctx, "snapshot sweep failed", slog.String("error", err.Error()))
+				continue
+			}
+			if written == 0 {
+				continue
+			}
+			log.InfoContext(ctx, "report snapshots written", slog.Int("tenants", written))
+		}
 	}
 }

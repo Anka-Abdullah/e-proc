@@ -36,6 +36,7 @@ var entityByEvent = map[string]struct {
 	broker.EventPOClosed:          {"purchase_order", "po_id"},
 	broker.EventApprovalRequested: {"approval", "approval_id"},
 	broker.EventApprovalDecided:   {"approval", "approval_id"},
+	broker.EventApprovalReminder:  {"approval", "approval_id"},
 }
 
 // RoutingKeys lists every event the audit service subscribes to.

@@ -62,13 +62,14 @@ fase berikutnya. Fokusnya MVP yang jalan, terdokumentasi, dan bisa didemokan.
 - [x] Responsive design dengan Tailwind (grid + nav mobile)
 - [ ] Halaman dokumentasi API sederhana
 
-## Fase 5 — Integrasi & workflow otomatis
+## Fase 5 — Integrasi & workflow otomatis ✅
 
-- [ ] Integrasi antar service via gRPC
-- [ ] Event RabbitMQ (publish, consumer status, consumer notifikasi)
-- [ ] Workflow otomatis (PO → approval di atas threshold, reminder, auto-close tender)
-- [ ] Reporting otomatis (export CSV/PDF, scheduled report)
-- [ ] Audit trail end-to-end
+- [x] Integrasi antar service via gRPC (bid-service memvalidasi tender ke tender-service sebelum menerima penawaran; `TENDER_GRPC_ADDR`, dan peringatan di log bila tidak diset)
+- [x] Event RabbitMQ: publish saat PO dibuat, consumer mengubah status (po-service menerapkan keputusan approval), plus event
+- [ ] Consumer notifikasi ke kanal nyata (email/Telegram) — saat ini reminder hanya berupa event + audit log
+- [x] Workflow otomatis: PO di atas threshold otomatis masuk approval (consumer po.created), reminder approval, auto-close tender
+- [x] Reporting otomatis: export CSV, snapshot laporan terjadwal ke koleksi `reporting_snapshots`
+- [x] Audit trail end-to-end (semua event otomatis tercatat, termasuk yang dihasilkan scheduler)
 
 ## Fase 6 — Testing & QA
 

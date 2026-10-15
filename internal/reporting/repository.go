@@ -17,6 +17,7 @@ type Repository struct {
 	pos       *mongo.Collection
 	tenders   *mongo.Collection
 	approvals *mongo.Collection
+	snapshots *mongo.Collection
 }
 
 // NewRepository binds the three projection collections.
@@ -25,6 +26,7 @@ func NewRepository(database *mongo.Database) *Repository {
 		pos:       database.Collection("reporting_purchase_orders"),
 		tenders:   database.Collection("reporting_tenders"),
 		approvals: database.Collection("reporting_approvals"),
+		snapshots: database.Collection("reporting_snapshots"),
 	}
 }
 

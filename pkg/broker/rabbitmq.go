@@ -27,6 +27,7 @@ const (
 	EventPOCreated         = "po.created"
 	EventApprovalRequested = "approval.requested"
 	EventApprovalDecided   = "approval.decided"
+	EventApprovalReminder  = "approval.reminder"
 	EventPOApproved        = "po.approved"
 	EventPOIssued          = "po.issued"
 	EventPORejected        = "po.rejected"

@@ -161,6 +161,37 @@ Login pertama (belum ada UI): lihat bagian "Menjalankan satu service" di atas
 untuk membuat token, atau daftarkan user lewat `POST /api/v1/auth/register`
 dengan token admin.
 
+## Alur otomatis (tanpa tambalan dari UI)
+
+Setelah Fase 5, rantai pengadaan berjalan sendiri lewat event:
+
+```mermaid
+sequenceDiagram
+  participant PO as po-service
+  participant MQ as RabbitMQ
+  participant AP as approval-service
+  participant PO2 as po-service (consumer)
+  participant AU as audit-service
+
+  PO->>MQ: po.created (requires_approval=true)
+  MQ->>AP: buat approval otomatis (assignee dari APPROVAL_ASSIGNEE)
+  AP->>MQ: approval.requested
+  Note over AP: scheduler mengirim approval.reminder bila menunggu terlalu lama
+  AP->>MQ: approval.decided
+  MQ->>PO2: po.approved / po.rejected
+  PO2->>PO2: status PO berubah sendiri (tanpa PATCH dari UI)
+  MQ->>AU: seluruh kejadian tercatat append-only
+```
+
+Dua hal yang perlu diketahui saat membaca kodenya:
+
+- `po-service` sengaja **tidak** menerbitkan ulang `po.approved` saat menerapkan
+  keputusan approval (`ApplyApprovalDecision`), karena approval-service sudah
+  menerbitkannya — kalau tidak, kedua service akan saling memicu tanpa henti.
+- Validasi tender di `bid-service` adalah panggilan gRPC, bukan pembacaan
+  langsung ke koleksi tender-service. Bila `TENDER_GRPC_ADDR` kosong, validasi
+  dilewati dan service menulis peringatan di log.
+
 ## Status
 
 - [x] Fase 0 — perencanaan, ruang lingkup, aktor, arsitektur

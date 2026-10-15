@@ -21,11 +21,14 @@ type Service struct {
 	cache     *cache.Client
 	publisher *broker.Publisher
 	log       *slog.Logger
+	// assignee is who an auto-created approval is routed to.
+	assignee string
 }
 
-// NewService builds the approval service.
-func NewService(repo *Repository, cacheClient *cache.Client, publisher *broker.Publisher, log *slog.Logger) *Service {
-	return &Service{repo: repo, cache: cacheClient, publisher: publisher, log: log}
+// NewService builds the approval service. assignee is the default approver used
+// when an approval is opened automatically from an event.
+func NewService(repo *Repository, cacheClient *cache.Client, publisher *broker.Publisher, assignee string, log *slog.Logger) *Service {
+	return &Service{repo: repo, cache: cacheClient, publisher: publisher, assignee: assignee, log: log}
 }
 
 // EnsureIndexes is called once at boot.

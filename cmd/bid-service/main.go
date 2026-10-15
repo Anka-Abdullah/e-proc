@@ -35,7 +35,23 @@ func main() {
 	defer cleanup()
 
 	repo := bid.NewRepository(deps.DB)
-	svc := bid.NewService(repo, deps.Cache, deps.Publisher, log)
+	// Cross-service check over gRPC. Disabled when the address is unset, and the
+	// warning says so instead of leaving the behaviour implicit.
+	var validator bid.TenderValidator
+	if cfg.TenderGRPCAddr != "" {
+		client, err := bid.NewTenderClient(cfg.TenderGRPCAddr)
+		if err != nil {
+			log.Error("tender client setup failed", slog.String("error", err.Error()))
+			os.Exit(1)
+		}
+		defer func() { _ = client.Close() }()
+		validator = client
+		log.Info("cross-service tender validation enabled", slog.String("addr", cfg.TenderGRPCAddr))
+	} else {
+		log.Warn("TENDER_GRPC_ADDR is not set: bids are accepted without checking the tender state")
+	}
+
+	svc := bid.NewService(repo, deps.Cache, deps.Publisher, validator, log)
 	if err := svc.EnsureIndexes(ctx); err != nil {
 		log.Error("index setup failed", slog.String("error", err.Error()))
 		os.Exit(1)
