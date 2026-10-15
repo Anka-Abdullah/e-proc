@@ -26,6 +26,10 @@ export JWT_TTL="${JWT_TTL:-12h}"
 export APPROVAL_THRESHOLD="${APPROVAL_THRESHOLD:-50000000}"
 export AUTO_CLOSE_INTERVAL="${AUTO_CLOSE_INTERVAL:-1m}"
 export FRONTEND_ORIGIN="${FRONTEND_ORIGIN:-http://localhost:3000}"
+# The edge rate limiter counts per IP per minute. Development and the E2E script
+# legitimately send more than the production default, so the dev stack raises it.
+# scripts/security-check.sh verifies the limiter still engages at this value.
+export RATE_LIMIT_RPS="${RATE_LIMIT_RPS:-300}"
 # Cross-service validation: bid-service checks the tender over gRPC.
 export TENDER_GRPC_ADDR="${TENDER_GRPC_ADDR:-localhost:9082}"
 # Who receives approvals created automatically from events.

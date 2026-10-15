@@ -137,13 +137,19 @@ func (c *Client) RevokeSession(ctx context.Context, token string) error {
 	return c.rdb.Del(ctx, "session:"+token).Err()
 }
 
-// IncrWithTTL counts requests inside a window: the backbone of rate limiting.
+// IncrWithTTL counts requests inside a fixed window: the TTL is set only when the
+// counter is created, so the window does not slide forward on every request.
+// Refreshing the TTL per request would let a busy client keep its own window
+// alive indefinitely and stay locked out — a fixed window always expires.
 func (c *Client) IncrWithTTL(ctx context.Context, key string, ttl time.Duration) (int64, error) {
-	pipe := c.rdb.TxPipeline()
-	count := pipe.Incr(ctx, key)
-	pipe.Expire(ctx, key, ttl)
-	if _, err := pipe.Exec(ctx); err != nil {
+	count, err := c.rdb.Incr(ctx, key).Result()
+	if err != nil {
 		return 0, fmt.Errorf("rate limit incr %s: %w", key, err)
 	}
-	return count.Val(), nil
+	if count == 1 {
+		if err := c.rdb.Expire(ctx, key, ttl).Err(); err != nil {
+			return count, fmt.Errorf("rate limit expire %s: %w", key, err)
+		}
+	}
+	return count, nil
 }
