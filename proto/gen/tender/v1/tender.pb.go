@@ -454,7 +454,8 @@ func (x *CreateTenderResponse) GetTender() *Tender {
 
 type GetTenderRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	TenantId      string                 `protobuf:"bytes,1,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
+	Id            string                 `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -487,6 +488,13 @@ func (x *GetTenderRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use GetTenderRequest.ProtoReflect.Descriptor instead.
 func (*GetTenderRequest) Descriptor() ([]byte, []int) {
 	return file_tender_v1_tender_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *GetTenderRequest) GetTenantId() string {
+	if x != nil {
+		return x.TenantId
+	}
+	return ""
 }
 
 func (x *GetTenderRequest) GetId() string {
@@ -542,8 +550,9 @@ func (x *GetTenderResponse) GetTender() *Tender {
 
 type PublishTenderRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	ActorId       string                 `protobuf:"bytes,2,opt,name=actor_id,json=actorId,proto3" json:"actor_id,omitempty"`
+	TenantId      string                 `protobuf:"bytes,1,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
+	Id            string                 `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
+	ActorId       string                 `protobuf:"bytes,3,opt,name=actor_id,json=actorId,proto3" json:"actor_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -576,6 +585,13 @@ func (x *PublishTenderRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use PublishTenderRequest.ProtoReflect.Descriptor instead.
 func (*PublishTenderRequest) Descriptor() ([]byte, []int) {
 	return file_tender_v1_tender_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *PublishTenderRequest) GetTenantId() string {
+	if x != nil {
+		return x.TenantId
+	}
+	return ""
 }
 
 func (x *PublishTenderRequest) GetId() string {
@@ -638,8 +654,9 @@ func (x *PublishTenderResponse) GetTender() *Tender {
 
 type CloseTenderRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	ActorId       string                 `protobuf:"bytes,2,opt,name=actor_id,json=actorId,proto3" json:"actor_id,omitempty"`
+	TenantId      string                 `protobuf:"bytes,1,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
+	Id            string                 `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
+	ActorId       string                 `protobuf:"bytes,3,opt,name=actor_id,json=actorId,proto3" json:"actor_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -672,6 +689,13 @@ func (x *CloseTenderRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use CloseTenderRequest.ProtoReflect.Descriptor instead.
 func (*CloseTenderRequest) Descriptor() ([]byte, []int) {
 	return file_tender_v1_tender_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *CloseTenderRequest) GetTenantId() string {
+	if x != nil {
+		return x.TenantId
+	}
+	return ""
 }
 
 func (x *CloseTenderRequest) GetId() string {
@@ -893,19 +917,22 @@ const file_tender_v1_tender_proto_rawDesc = "" +
 	"\x12invited_vendor_ids\x18\b \x03(\tR\x10invitedVendorIds\x12\x19\n" +
 	"\bactor_id\x18\t \x01(\tR\aactorId\"G\n" +
 	"\x14CreateTenderResponse\x12/\n" +
-	"\x06tender\x18\x01 \x01(\v2\x17.eproc.tender.v1.TenderR\x06tender\"\"\n" +
-	"\x10GetTenderRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"D\n" +
-	"\x11GetTenderResponse\x12/\n" +
-	"\x06tender\x18\x01 \x01(\v2\x17.eproc.tender.v1.TenderR\x06tender\"A\n" +
-	"\x14PublishTenderRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
-	"\bactor_id\x18\x02 \x01(\tR\aactorId\"H\n" +
-	"\x15PublishTenderResponse\x12/\n" +
 	"\x06tender\x18\x01 \x01(\v2\x17.eproc.tender.v1.TenderR\x06tender\"?\n" +
-	"\x12CloseTenderRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
-	"\bactor_id\x18\x02 \x01(\tR\aactorId\"F\n" +
+	"\x10GetTenderRequest\x12\x1b\n" +
+	"\ttenant_id\x18\x01 \x01(\tR\btenantId\x12\x0e\n" +
+	"\x02id\x18\x02 \x01(\tR\x02id\"D\n" +
+	"\x11GetTenderResponse\x12/\n" +
+	"\x06tender\x18\x01 \x01(\v2\x17.eproc.tender.v1.TenderR\x06tender\"^\n" +
+	"\x14PublishTenderRequest\x12\x1b\n" +
+	"\ttenant_id\x18\x01 \x01(\tR\btenantId\x12\x0e\n" +
+	"\x02id\x18\x02 \x01(\tR\x02id\x12\x19\n" +
+	"\bactor_id\x18\x03 \x01(\tR\aactorId\"H\n" +
+	"\x15PublishTenderResponse\x12/\n" +
+	"\x06tender\x18\x01 \x01(\v2\x17.eproc.tender.v1.TenderR\x06tender\"\\\n" +
+	"\x12CloseTenderRequest\x12\x1b\n" +
+	"\ttenant_id\x18\x01 \x01(\tR\btenantId\x12\x0e\n" +
+	"\x02id\x18\x02 \x01(\tR\x02id\x12\x19\n" +
+	"\bactor_id\x18\x03 \x01(\tR\aactorId\"F\n" +
 	"\x13CloseTenderResponse\x12/\n" +
 	"\x06tender\x18\x01 \x01(\v2\x17.eproc.tender.v1.TenderR\x06tender\"\xb2\x01\n" +
 	"\x12ListTendersRequest\x12\x1b\n" +

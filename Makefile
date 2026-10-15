@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 GOBIN := $(shell go env GOPATH)/bin
-SERVICES := api-gateway vendor-service tender-service bid-service po-service approval-service audit-service reporting-service
+SERVICES := api-gateway auth-service vendor-service tender-service bid-service po-service approval-service audit-service reporting-service
 
 .PHONY: help
 help: ## Show this help

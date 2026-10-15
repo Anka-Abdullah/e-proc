@@ -85,6 +85,7 @@ di mesin ini (6379 dipakai Redis lain, 8086 dipakai Tiny RDM).
 | approval-service | 8005→8085 | 9085 |
 | audit-service | 8006→8086 | 9086 |
 | reporting-service | 8007→8087 | 9087 |
+| auth-service | 8008→8088 | 9098 |
 | web | 3000 | — |
 | mongo | 27017 | — |
 | redis | **6380→6379** | — |

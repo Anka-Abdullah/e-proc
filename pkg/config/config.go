@@ -33,6 +33,9 @@ type Config struct {
 
 	RateLimitRPS      int
 	ApprovalThreshold float64
+	// AutoCloseInterval controls how often the tender scheduler looks for
+	// expired tenders. Configurable so it can be exercised in tests.
+	AutoCloseInterval time.Duration
 }
 
 // Load builds a Config for the named service. Env vars override every default,
@@ -54,6 +57,7 @@ func Load(service string) (Config, error) {
 		JWTTTL:            envDuration("JWT_TTL", 12*time.Hour),
 		RateLimitRPS:      envInt("RATE_LIMIT_RPS", 50),
 		ApprovalThreshold: envFloat("APPROVAL_THRESHOLD", 50_000_000),
+		AutoCloseInterval: envDuration("AUTO_CLOSE_INTERVAL", time.Minute),
 	}
 
 	cfg.RedisDB = envInt("REDIS_DB", 0)

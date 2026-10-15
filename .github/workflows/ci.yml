@@ -57,7 +57,7 @@ jobs:
       - name: Build all services
         run: |
           mkdir -p bin
-          for svc in api-gateway vendor-service tender-service bid-service po-service approval-service audit-service reporting-service; do
+          for svc in api-gateway auth-service vendor-service tender-service bid-service po-service approval-service audit-service reporting-service; do
             go build -trimpath -o bin/$svc ./cmd/$svc
           done
 

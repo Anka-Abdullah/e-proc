@@ -51,6 +51,27 @@ services:
       timeout: 10s
       retries: 10
 
+  auth-service:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile.service
+      args:
+        SERVICE: auth-service
+    container_name: eproc-auth
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      <<: *app_env
+      HTTP_ADDR: ":8088"
+      GRPC_ADDR: ":9098"
+    ports:
+      - "8008:8088"
+      - "9098:9098"
+
   api-gateway:
     build:
       context: ../..

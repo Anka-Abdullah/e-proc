@@ -56,13 +56,24 @@ message CreateTenderRequest {
 }
 message CreateTenderResponse { Tender tender = 1; }
 
-message GetTenderRequest { string id = 1; }
+message GetTenderRequest {
+  string tenant_id = 1;
+  string id = 2;
+}
 message GetTenderResponse { Tender tender = 1; }
 
-message PublishTenderRequest { string id = 1; string actor_id = 2; }
+message PublishTenderRequest {
+  string tenant_id = 1;
+  string id = 2;
+  string actor_id = 3;
+}
 message PublishTenderResponse { Tender tender = 1; }
 
-message CloseTenderRequest { string id = 1; string actor_id = 2; }
+message CloseTenderRequest {
+  string tenant_id = 1;
+  string id = 2;
+  string actor_id = 3;
+}
 message CloseTenderResponse { Tender tender = 1; }
 
 message ListTendersRequest {
