@@ -106,6 +106,15 @@ Index:
 - `{actor_id: 1, created_at: -1}`
 - TTL index opsional pada `created_at` untuk retensi (default nonaktif)
 
+## Kenapa reporting memakai proyeksi, bukan query antar service
+
+Database per service berarti reporting **tidak boleh** membaca koleksi milik
+service lain. Jadi reporting-service berlangganan event yang sama dan
+memelihara tabel baca sendiri (`reporting_purchase_orders`, `reporting_tenders`,
+`reporting_approvals`). Semua handler adalah upsert berkunci id entitas, jadi
+pengiriman ulang event aman. Konsekuensinya: laporan selalu eventual-consistent
+— beberapa detik di belakang kebenaran — dan itu sifat yang disengaja, bukan bug.
+
 ## Kunci Redis
 
 | Pola | Isi | TTL |

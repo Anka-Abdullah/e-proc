@@ -136,6 +136,10 @@ func (s *Service) UpdateStatus(ctx context.Context, tenantID, id string, status 
 		s.emit(ctx, broker.EventPOApproved, order.TenantID, actorID, map[string]any{
 			"po_id": order.ID, "number": order.Number, "approval_id": order.ApprovalID, "total": order.Total,
 		})
+	case StatusIssued:
+		s.emit(ctx, broker.EventPOIssued, order.TenantID, actorID, map[string]any{
+			"po_id": order.ID, "number": order.Number, "vendor_id": order.VendorID, "total": order.Total,
+		})
 	case StatusRejected:
 		s.emit(ctx, broker.EventPORejected, order.TenantID, actorID, map[string]any{
 			"po_id": order.ID, "number": order.Number, "approval_id": order.ApprovalID,

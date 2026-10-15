@@ -102,6 +102,16 @@ func (s *Service) Decide(ctx context.Context, tenantID, id string, in DecideInpu
 	}
 	s.invalidate(ctx, updated.ID)
 
+	// Every decision is announced, so projections and the audit log see it.
+	s.emit(ctx, broker.EventApprovalDecided, updated.TenantID, claims.UserID, map[string]any{
+		"approval_id": updated.ID,
+		"entity_type": updated.EntityType,
+		"entity_id":   updated.EntityID,
+		"decision":    decision,
+		"amount":      updated.Amount,
+		"comment":     in.Comment,
+	})
+
 	// The purchase order service reacts to these events to move its own state.
 	switch updated.EntityType {
 	case EntityPurchaseOrder:

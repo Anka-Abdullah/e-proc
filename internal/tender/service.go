@@ -100,6 +100,7 @@ func (s *Service) Publish(ctx context.Context, tenantID, id, actorID string) (*T
 		"tender_id":          t.ID,
 		"code":               t.Code,
 		"title":              t.Title,
+		"budget":             t.Budget,
 		"close_at":           t.CloseAt,
 		"invited_vendor_ids": t.InvitedVendorIDs,
 	})

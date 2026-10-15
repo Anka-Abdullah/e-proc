@@ -42,8 +42,8 @@ fase berikutnya. Fokusnya MVP yang jalan, terdokumentasi, dan bisa didemokan.
 - [x] Bid service (submit, list per tender, perbandingan harga) — terverifikasi end-to-end
 - [x] Purchase Order service (buat dari bid, status machine) — terverifikasi end-to-end
 - [x] Approval service (workflow, approve/reject, history) — terverifikasi end-to-end
-- [ ] Audit service (append-only, actor/action/entity/metadata)
-- [ ] Reporting service (PO per vendor, tender, approval)
+- [x] Audit service (append-only, actor/action/entity/metadata) — terverifikasi end-to-end
+- [x] Reporting service (PO per vendor, tender, approval) — proyeksi dari event, termasuk export CSV
 - [ ] API Gateway (routing REST -> gRPC, agregasi)
 - [x] Middleware: JWT, RBAC, tenant isolation, request logging, error handling
 - [x] Komunikasi: REST (external), gRPC (internal), RabbitMQ (event, exchange `eproc.events` terbentuk)

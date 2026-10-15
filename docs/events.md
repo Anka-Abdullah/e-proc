@@ -23,8 +23,10 @@ routing key = nama event. Envelope-nya seragam (`pkg/broker.Event`):
 | `bid.submitted` | bid-service | audit-service | `bid_id`, `tender_id`, `vendor_id`, `total` |
 | `bid.selected` | bid-service | audit-service, po-service | `bid_id`, `tender_id`, `vendor_id`, `total`, `rejected_bids` |
 | `po.created` | po-service | approval-service, audit-service, reporting-service | `po_id`, `number`, `vendor_id`, `total`, `requires_approval`, `status` |
-| `approval.requested` | approval-service | audit-service, notification | `approval_id`, `entity_type`, `entity_id`, `amount`, `assigned_to` |
+| `approval.requested` | approval-service | audit-service, reporting-service | `approval_id`, `entity_type`, `entity_id`, `amount`, `assigned_to` |
+| `approval.decided` | approval-service | audit-service, reporting-service | `approval_id`, `entity_type`, `entity_id`, `decision`, `amount` |
 | `po.approved` | approval-service (via po-service status) | po-service, audit-service, reporting-service | `po_id`, `approval_id`, `amount` |
+| `po.issued` | po-service | audit-service, reporting-service | `po_id`, `number`, `vendor_id`, `total` |
 | `po.rejected` | approval-service | po-service, audit-service | `po_id`, `approval_id`, `comment` |
 | `po.closed` | po-service | audit-service, reporting-service | `po_id`, `closed_by` |
 | `audit.recorded` | audit-service | — | `audit_id`, `action`, `entity_type`, `entity_id` |
