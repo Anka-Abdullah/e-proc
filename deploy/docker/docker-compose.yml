@@ -1,5 +1,19 @@
 name: eproc
 
+# Shared service environment. Defined once at the top so every service can
+# merge it with `<<: *app_env` — anchors must exist before they are referenced.
+x-app-env: &app_env
+  APP_ENV: ${APP_ENV:-development}
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+  MONGO_URI: mongodb://mongo:27017
+  MONGO_DATABASE: ${MONGO_DATABASE:-eproc}
+  REDIS_ADDR: redis:6379
+  RABBITMQ_URL: amqp://${RABBITMQ_USER:-eproc}:${RABBITMQ_PASSWORD:-eproc}@rabbitmq:5672/
+  JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
+  JWT_TTL: ${JWT_TTL:-12h}
+  APPROVAL_THRESHOLD: ${APPROVAL_THRESHOLD:-50000000}
+  AUTO_CLOSE_INTERVAL: ${AUTO_CLOSE_INTERVAL:-1m}
+
 services:
   mongo:
     image: mongo:8
@@ -87,16 +101,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    environment: &app_env
-      APP_ENV: ${APP_ENV:-development}
-      LOG_LEVEL: ${LOG_LEVEL:-info}
-      MONGO_URI: mongodb://mongo:27017
-      MONGO_DATABASE: ${MONGO_DATABASE:-eproc}
-      REDIS_ADDR: redis:6379
-      RABBITMQ_URL: amqp://${RABBITMQ_USER:-eproc}:${RABBITMQ_PASSWORD:-eproc}@rabbitmq:5672/
-      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
-      JWT_TTL: ${JWT_TTL:-12h}
-      APPROVAL_THRESHOLD: ${APPROVAL_THRESHOLD:-50000000}
+    environment:
+      <<: *app_env
     ports:
       - "8000:8080"
 
