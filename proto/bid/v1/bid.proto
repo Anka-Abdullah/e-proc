@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+package eproc.bid.v1;
+
+import "google/protobuf/timestamp.proto";
+import "common/v1/common.proto";
+
+option go_package = "github.com/ank/e-proc/proto/gen/bid/v1;bidv1";
+
+// BidStatus reflects where a quotation stands in the selection process.
+enum BidStatus {
+  BID_STATUS_UNSPECIFIED = 0;
+  BID_STATUS_SUBMITTED = 1;
+  BID_STATUS_SHORTLISTED = 2;
+  BID_STATUS_SELECTED = 3;
+  BID_STATUS_REJECTED = 4;
+}
+
+// BidItem is the price offered for one tender line.
+message BidItem {
+  string name = 1;
+  double quantity = 2;
+  eproc.common.v1.Money unit_price = 3;
+  eproc.common.v1.Money total_price = 4;
+}
+
+// Bid is a vendor's quotation for a tender.
+message Bid {
+  string id = 1;
+  string tenant_id = 2;
+  string tender_id = 3;
+  string vendor_id = 4;
+  repeated BidItem items = 5;
+  eproc.common.v1.Money total = 6;
+  int32 delivery_days = 7;
+  string notes = 8;
+  BidStatus status = 9;
+  google.protobuf.Timestamp submitted_at = 10;
+  google.protobuf.Timestamp updated_at = 11;
+  string submitted_by = 12;
+}
+
+message SubmitBidRequest {
+  string tenant_id = 1;
+  string tender_id = 2;
+  string vendor_id = 3;
+  repeated BidItem items = 4;
+  int32 delivery_days = 5;
+  string notes = 6;
+  string actor_id = 7;
+}
+message SubmitBidResponse { Bid bid = 1; }
+
+message GetBidRequest { string id = 1; }
+message GetBidResponse { Bid bid = 1; }
+
+message ListBidsByTenderRequest {
+  string tender_id = 1;
+  eproc.common.v1.PageRequest page = 2;
+}
+message ListBidsByTenderResponse {
+  repeated Bid bids = 1;
+  eproc.common.v1.PageResponse page = 2;
+}
+
+// BidComparison is one row of the price comparison report.
+message BidComparison {
+  string bid_id = 1;
+  string vendor_id = 2;
+  string vendor_name = 3;
+  eproc.common.v1.Money total = 4;
+  int32 delivery_days = 5;
+  bool lowest_price = 6;
+  bool fastest_delivery = 7;
+}
+
+message CompareBidsRequest { string tender_id = 1; }
+message CompareBidsResponse {
+  repeated BidComparison comparisons = 1;
+  eproc.common.v1.Money lowest_total = 2;
+}
+
+message SelectBidRequest { string bid_id = 1; string actor_id = 2; }
+message SelectBidResponse { Bid bid = 1; }
+
+// BidService stores quotations and produces the price comparison report.
+service BidService {
+  rpc SubmitBid(SubmitBidRequest) returns (SubmitBidResponse);
+  rpc GetBid(GetBidRequest) returns (GetBidResponse);
+  rpc ListBidsByTender(ListBidsByTenderRequest) returns (ListBidsByTenderResponse);
+  rpc CompareBids(CompareBidsRequest) returns (CompareBidsResponse);
+  rpc SelectBid(SelectBidRequest) returns (SelectBidResponse);
+}

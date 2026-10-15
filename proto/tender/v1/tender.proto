@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+package eproc.tender.v1;
+
+import "google/protobuf/timestamp.proto";
+import "common/v1/common.proto";
+
+option go_package = "github.com/ank/e-proc/proto/gen/tender/v1;tenderv1";
+
+// TenderStatus is the lifecycle state of a tender / RFQ.
+enum TenderStatus {
+  TENDER_STATUS_UNSPECIFIED = 0;
+  TENDER_STATUS_DRAFT = 1;
+  TENDER_STATUS_PUBLISHED = 2;
+  TENDER_STATUS_CLOSED = 3;
+  TENDER_STATUS_CANCELLED = 4;
+  TENDER_STATUS_AWARDED = 5;
+}
+
+// TenderItem is one line of what is being procured.
+message TenderItem {
+  string name = 1;
+  double quantity = 2;
+  string unit = 3;
+  string specification = 4;
+}
+
+// Tender is a request for quotation published to vendors.
+message Tender {
+  string id = 1;
+  string tenant_id = 2;
+  string code = 3;
+  string title = 4;
+  string description = 5;
+  repeated TenderItem items = 6;
+  eproc.common.v1.Money budget = 7;
+  TenderStatus status = 8;
+  google.protobuf.Timestamp open_at = 9;
+  google.protobuf.Timestamp close_at = 10;
+  google.protobuf.Timestamp created_at = 11;
+  google.protobuf.Timestamp updated_at = 12;
+  string created_by = 13;
+  repeated string invited_vendor_ids = 14;
+}
+
+message CreateTenderRequest {
+  string tenant_id = 1;
+  string code = 2;
+  string title = 3;
+  string description = 4;
+  repeated TenderItem items = 5;
+  eproc.common.v1.Money budget = 6;
+  google.protobuf.Timestamp close_at = 7;
+  repeated string invited_vendor_ids = 8;
+  string actor_id = 9;
+}
+message CreateTenderResponse { Tender tender = 1; }
+
+message GetTenderRequest { string id = 1; }
+message GetTenderResponse { Tender tender = 1; }
+
+message PublishTenderRequest { string id = 1; string actor_id = 2; }
+message PublishTenderResponse { Tender tender = 1; }
+
+message CloseTenderRequest { string id = 1; string actor_id = 2; }
+message CloseTenderResponse { Tender tender = 1; }
+
+message ListTendersRequest {
+  string tenant_id = 1;
+  string search = 2;
+  TenderStatus status = 3;
+  eproc.common.v1.PageRequest page = 4;
+}
+message ListTendersResponse {
+  repeated Tender tenders = 1;
+  eproc.common.v1.PageResponse page = 2;
+}
+
+// TenderService manages tenders and their publication lifecycle.
+service TenderService {
+  rpc CreateTender(CreateTenderRequest) returns (CreateTenderResponse);
+  rpc GetTender(GetTenderRequest) returns (GetTenderResponse);
+  rpc PublishTender(PublishTenderRequest) returns (PublishTenderResponse);
+  rpc CloseTender(CloseTenderRequest) returns (CloseTenderResponse);
+  rpc ListTenders(ListTendersRequest) returns (ListTendersResponse);
+}

@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package eproc.po.v1;
+
+import "google/protobuf/timestamp.proto";
+import "common/v1/common.proto";
+
+option go_package = "github.com/ank/e-proc/proto/gen/po/v1;pov1";
+
+// PurchaseOrderStatus is the PO lifecycle, including the approval leg.
+enum PurchaseOrderStatus {
+  PURCHASE_ORDER_STATUS_UNSPECIFIED = 0;
+  PURCHASE_ORDER_STATUS_DRAFT = 1;
+  PURCHASE_ORDER_STATUS_PENDING_APPROVAL = 2;
+  PURCHASE_ORDER_STATUS_APPROVED = 3;
+  PURCHASE_ORDER_STATUS_REJECTED = 4;
+  PURCHASE_ORDER_STATUS_ISSUED = 5;
+  PURCHASE_ORDER_STATUS_CLOSED = 6;
+}
+
+// PurchaseOrderLine is one ordered item with its agreed price.
+message PurchaseOrderLine {
+  string name = 1;
+  double quantity = 2;
+  eproc.common.v1.Money unit_price = 3;
+  eproc.common.v1.Money total_price = 4;
+}
+
+// PurchaseOrder is the committed order to a vendor.
+message PurchaseOrder {
+  string id = 1;
+  string tenant_id = 2;
+  string number = 3;
+  string tender_id = 4;
+  string bid_id = 5;
+  string vendor_id = 6;
+  repeated PurchaseOrderLine lines = 7;
+  eproc.common.v1.Money total = 8;
+  PurchaseOrderStatus status = 9;
+  string approval_id = 10;
+  google.protobuf.Timestamp created_at = 11;
+  google.protobuf.Timestamp updated_at = 12;
+  string created_by = 13;
+  string notes = 14;
+}
+
+message CreatePurchaseOrderRequest {
+  string tenant_id = 1;
+  string tender_id = 2;
+  string bid_id = 3;
+  string vendor_id = 4;
+  repeated PurchaseOrderLine lines = 5;
+  string notes = 6;
+  string actor_id = 7;
+}
+message CreatePurchaseOrderResponse {
+  PurchaseOrder purchase_order = 1;
+  bool requires_approval = 2;
+}
+
+message GetPurchaseOrderRequest { string id = 1; }
+message GetPurchaseOrderResponse { PurchaseOrder purchase_order = 1; }
+
+message UpdatePurchaseOrderStatusRequest {
+  string id = 1;
+  PurchaseOrderStatus status = 2;
+  string actor_id = 3;
+}
+message UpdatePurchaseOrderStatusResponse { PurchaseOrder purchase_order = 1; }
+
+message ListPurchaseOrdersRequest {
+  string tenant_id = 1;
+  string vendor_id = 2;
+  PurchaseOrderStatus status = 3;
+  eproc.common.v1.PageRequest page = 4;
+}
+message ListPurchaseOrdersResponse {
+  repeated PurchaseOrder purchase_orders = 1;
+  eproc.common.v1.PageResponse page = 2;
+}
+
+message ClosePurchaseOrderRequest { string id = 1; string actor_id = 2; }
+message ClosePurchaseOrderResponse { PurchaseOrder purchase_order = 1; }
+
+// PurchaseOrderService owns the PO aggregate and its status machine.
+service PurchaseOrderService {
+  rpc CreatePurchaseOrder(CreatePurchaseOrderRequest) returns (CreatePurchaseOrderResponse);
+  rpc GetPurchaseOrder(GetPurchaseOrderRequest) returns (GetPurchaseOrderResponse);
+  rpc UpdatePurchaseOrderStatus(UpdatePurchaseOrderStatusRequest) returns (UpdatePurchaseOrderStatusResponse);
+  rpc ListPurchaseOrders(ListPurchaseOrdersRequest) returns (ListPurchaseOrdersResponse);
+  rpc ClosePurchaseOrder(ClosePurchaseOrderRequest) returns (ClosePurchaseOrderResponse);
+}

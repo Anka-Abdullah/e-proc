@@ -1,0 +1,30 @@
+# Multi-stage build for every Go service in the monorepo.
+# The service is selected with --build-arg SERVICE=<cmd folder name>.
+FROM golang:1.26-alpine AS builder
+
+ARG SERVICE
+WORKDIR /src
+
+RUN apk add --no-cache git ca-certificates
+
+# Cache dependencies before copying the full source tree.
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+
+RUN test -n "$SERVICE" || (echo "SERVICE build arg is required" && exit 1)
+RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" \
+    -o /out/service ./cmd/${SERVICE}
+
+FROM alpine:3.21
+
+RUN apk add --no-cache ca-certificates tzdata && \
+    adduser -D -u 10001 appuser
+
+COPY --from=builder /out/service /usr/local/bin/service
+
+USER appuser
+EXPOSE 8080 9090
+
+ENTRYPOINT ["/usr/local/bin/service"]

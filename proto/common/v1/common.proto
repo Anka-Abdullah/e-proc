@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package eproc.common.v1;
+
+option go_package = "github.com/ank/e-proc/proto/gen/common/v1;commonv1";
+
+// PageRequest is the shared pagination input for list RPCs.
+message PageRequest {
+  int32 page = 1;
+  int32 per_page = 2;
+}
+
+// PageResponse is the shared pagination output for list RPCs.
+message PageResponse {
+  int32 page = 1;
+  int32 per_page = 2;
+  int64 total = 3;
+}
+
+// Empty is used where a call carries no payload.
+message Empty {}
+
+// Money is an integer amount in the smallest currency unit (e.g. rupiah),
+// avoiding floating point rounding in financial comparisons.
+message Money {
+  int64 amount = 1;
+  string currency = 2;
+}

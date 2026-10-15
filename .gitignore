@@ -1,0 +1,25 @@
+# --- environment ---
+.env
+.env.*
+!.env.example
+
+# --- Go ---
+/bin/
+*.test
+*.out
+coverage.out
+vendor/
+
+# --- Node / Next.js ---
+node_modules/
+web/.next/
+web/out/
+web/next-env.d.ts
+
+# --- tooling ---
+.DS_Store
+*.log
+.tmp/
+reports/
+playwright-report/
+test-results/
