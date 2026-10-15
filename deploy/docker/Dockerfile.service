@@ -8,13 +8,29 @@ WORKDIR /src
 RUN apk add --no-cache git ca-certificates
 
 # Cache dependencies before copying the full source tree.
+#
+# The module cache lives in a BuildKit cache mount, so a retry after a network
+# failure reuses what already arrived instead of starting from zero. On a slow or
+# flaky link this is the difference between "eventually builds" and "never
+# finishes": a dropped connection mid-download otherwise throws everything away.
+# The bounded retry loop covers transient proxy errors (`stream error`, 5xx),
+# not a bad module path — those still fail after three attempts.
 COPY go.mod go.sum ./
-RUN go mod download
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    for attempt in 1 2 3; do \
+        if go mod download; then break; fi; \
+        if [ "$attempt" = "3" ]; then echo "go mod download failed after 3 attempts" >&2; exit 1; fi; \
+        echo "go mod download attempt $attempt failed, retrying in 5s" >&2; \
+        sleep 5; \
+    done
 
 COPY . .
 
 RUN test -n "$SERVICE" || (echo "SERVICE build arg is required" && exit 1)
-RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" \
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" \
     -o /out/service ./cmd/${SERVICE}
 
 FROM alpine:3.21

@@ -1,0 +1,95 @@
+# Deployment
+
+Dua jalur yang sudah disiapkan: Docker Compose (cara utama) dan Kubernetes
+(opsional). Keduanya memakai image yang sama dan sinyal kesehatan yang sama.
+
+## 1. Docker Compose — satu perintah
+
+```bash
+docker compose up -d --build          # 13 container: infra, 8 service, gateway, web
+docker compose ps                     # tunggu sampai semua "healthy"
+docker compose logs -f api-gateway
+docker compose down                   # hentikan, volume tetap
+docker compose down -v                # hentikan dan hapus data
+```
+
+Urutan start dijaga `depends_on: condition: service_healthy`: gateway baru
+menyala setelah 8 upstream menjawab `/healthz`, dan web setelah gateway sehat.
+Konsekuensinya `ps` yang hijau berarti API memang siap.
+
+### Port di host
+
+| Layanan | Port |
+| --- | --- |
+| Gateway API | 8000 |
+| Service domain | 8001–8008 (masing-masing juga membuka gRPC 9081–9087, 9098, 9099) |
+| Web | 3000 |
+| MongoDB | 27017 |
+| Redis | **6380** (6379 sering sudah dipakai Redis lain di mesin developer) |
+| RabbitMQ | 5672, UI 15672 |
+
+### Sebelum dipakai serius
+
+1. `cp .env.example .env`, isi nilai sebenarnya.
+2. **`JWT_SECRET` wajib diganti.** Dengan `APP_ENV=production`, service menolak
+   boot selama nilainya masih default pengembangan — jadi salah konfigurasi
+   ketahuan saat start, bukan setelah data bocor.
+3. Ganti kredensial RabbitMQ dan MongoDB.
+4. Batasi CORS: `FRONTEND_ORIGIN` hanya boleh origin web yang sebenarnya.
+5. Letakkan gateway di belakang TLS. Gateway sudah meneruskan `X-Forwarded-*`
+   (proxy menulisnya lewat `SetXForwarded`), jadi rate limiter membaca IP klien
+   yang benar, bukan IP reverse proxy.
+
+## 2. Kubernetes — opsional
+
+Lihat [`deploy/k8s/README.md`](../deploy/k8s/README.md) untuk urutan apply dan
+daftar yang harus diisi. Poin pentingnya:
+
+- Hanya `api-gateway` dan `web` yang diekspos lewat ingress; service domain tetap
+  internal. Kalau service domain dibuka langsung, RBAC di gateway kehilangan arti.
+- `tender-service`, `approval-service`, `reporting-service` **1 replika** karena
+  scheduler-nya berjalan di dalam proses. Menaikkan replika tanpa lease membuat
+  sweep ganda (tender tertutup dua kali, reminder terkirim dua kali).
+- Probe memakai `/healthz` (liveness) dan `/readyz` (readiness) yang sama dengan
+  compose, termasuk `/readyz` gateway yang melaporkan status tiap upstream.
+
+## Rahasia dan konfigurasi
+
+Semua konfigurasi lewat environment variable (`pkg/config`). Yang tidak boleh
+masuk repo: `JWT_SECRET`, kredensial RabbitMQ/MongoDB, dan token apa pun.
+
+Di Kubernetes, lebih baik membuat secret secara imperatif supaya nilainya tidak
+pernah singgah di disk:
+
+```bash
+kubectl -n eproc create secret generic eproc-secrets \
+  --from-literal=JWT_SECRET="$(openssl rand -base64 48)"
+```
+
+## Data dan backup
+
+- MongoDB menyimpan data utama. Backup: `docker compose exec mongo mongodump
+  --archive=/tmp/dump.gz --gzip` lalu salin keluar, atau `mongodump` dari host ke
+  `localhost:27017`.
+- Redis menyimpan cache, sesi, penanda idempotency, dan counter rate limit —
+  **boleh hilang**: semua bisa dibangun ulang. Yang perlu diperhatikan: sesi yang
+  hilang berarti pengguna harus login ulang, dan penanda idempotency yang hilang
+  membuka peluang pemrosesan ulang event (index unik di MongoDB tetap menahan
+  duplikasi).
+- RabbitMQ: queue bersifat durable. Pesan yang gagal di-`Nack` tanpa requeue dan
+  tercatat di log — **bukan** masuk dead-letter queue otomatis, jadi bila butuh
+  DLQ itu langkah berikutnya yang belum dikerjakan.
+
+## Kesehatan dan pengamatan
+
+- `GET /healthz` — liveness, tidak menyentuh dependensi.
+- `GET /readyz` — readiness: memeriksa Mongo/Redis, dan di gateway memeriksa
+  8 upstream sekaligus. Endpoint ini tidak dihitung rate limiter.
+- Log terstruktur (`slog`): JSON di `APP_ENV=production`, teks di development.
+  Setiap permintaan punya `request_id` yang diteruskan ke service di belakang
+  gateway (`X-Request-Id`).
+- Audit trail: setiap aksi penting tercatat append-only di `audit_logs`, termasuk
+  aksi yang dilakukan scheduler.
+
+Yang belum ada: metrik Prometheus/Grafana, tracing terdistribusi, dan notifikasi
+ke kanal nyata (email/Telegram). Ketiganya sudah ditandai di `docs/plan.md`.
