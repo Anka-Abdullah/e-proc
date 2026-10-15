@@ -50,8 +50,19 @@ make up                       # atau seluruh stack via Docker Compose
 Frontend:
 
 ```bash
-cd web && pnpm install && pnpm dev   # http://localhost:3000
+cd web
+pnpm install
+NEXT_PUBLIC_API_URL=http://localhost:8000 pnpm dev   # http://localhost:3000
 ```
+
+Halaman: `/login`, `/dashboard`, `/vendors`, `/tenders`, `/bids`,
+`/purchase-orders`, `/approvals`, `/audit-logs`, `/reports`. Menu dan tombol
+disaring mengikuti role (matriks izin di `web/src/lib/rbac.ts` mirror dari
+`pkg/auth/auth.go`).
+
+Catatan autentikasi UI: token disimpan di `localStorage` untuk MVP. Cookie
+httpOnly yang di-set gateway adalah langkah pengerasan berikutnya, dan sudah
+dicatat sebagai utang teknis di `web/src/lib/api.ts`.
 
 Perintah lain: `make help`.
 

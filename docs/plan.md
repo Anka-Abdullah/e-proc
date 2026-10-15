@@ -51,16 +51,16 @@ fase berikutnya. Fokusnya MVP yang jalan, terdokumentasi, dan bisa didemokan.
 
 ## Fase 4 — Frontend
 
-- [ ] Layout dasar (sidebar, topbar, halaman login)
-- [ ] Halaman: dashboard, vendor, tender, bid, PO, approval, audit, reporting
-- [ ] Komponen reusable (table, form, modal, badge, card, filter, pagination)
-- [ ] Integrasi REST API
-- [ ] State management (React Query + context auth)
-- [ ] RBAC di UI (sembunyikan menu & aksi)
-- [ ] Form validation
-- [ ] Notifikasi real-time (opsional)
-- [ ] Responsive (Tailwind)
-- [ ] Halaman dokumentasi API
+- [x] Layout dasar (sidebar, topbar, halaman login)
+- [x] Halaman: dashboard, vendor, tender, bid, PO, approval, audit, reporting
+- [x] Komponen reusable (table, form, modal, badge, card, filter, pagination)
+- [x] Integrasi REST API (satu klien tip untuk seluruh gateway)
+- [x] State management (React Query + context auth)
+- [x] RBAC di UI (menu dan aksi disembunyikan sesuai role)
+- [x] Form validation (zod + react-hook-form, server tetap otoritas)
+- [ ] Notifikasi real-time (opsional — belum dikerjakan)
+- [x] Responsive design dengan Tailwind (grid + nav mobile)
+- [ ] Halaman dokumentasi API sederhana
 
 ## Fase 5 — Integrasi & workflow otomatis
 
