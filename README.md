@@ -228,35 +228,3 @@ sequenceDiagram
   MQ->>AU: seluruh kejadian tercatat append-only
 ```
 
-Dua hal yang perlu diketahui saat membaca kodenya:
-
-- `po-service` sengaja **tidak** menerbitkan ulang `po.approved` saat menerapkan
-  keputusan approval (`ApplyApprovalDecision`), karena approval-service sudah
-  menerbitkannya — kalau tidak, kedua service akan saling memicu tanpa henti.
-- Validasi tender di `bid-service` adalah panggilan gRPC, bukan pembacaan
-  langsung ke koleksi tender-service. Bila `TENDER_GRPC_ADDR` kosong, validasi
-  dilewati dan service menulis peringatan di log.
-
-## Status
-
-- [x] Fase 0 — perencanaan, ruang lingkup, aktor, arsitektur
-- [x] Fase 1 — repository, tooling, Docker, CI, linter
-- [ ] Fase 2 — domain & data model final, protobuf
-- [ ] Fase 3 — service inti
-- [ ] Fase 4 — frontend
-- [ ] Fase 5 — integrasi & workflow otomatis
-- [ ] Fase 6 — testing & QA
-- [ ] Fase 7 — CI/CD & deployment
-- [ ] Fase 8 — dokumentasi & portofolio
-- [ ] Fase 9 — AI-assisted workflow
-- [ ] Fase 10 — finalisasi
-
-## AI-assisted workflow
-
-Bagian ini diisi selama pengerjaan (Fase 9): prompt yang dipakai, apa yang
-divalidasi manual, dan bagaimana hasil AI diuji. Aturannya satu: **tidak ada
-kode hasil AI yang masuk tanpa review dan test yang lulus.**
-
-## Lisensi
-
-Belum ditentukan.
